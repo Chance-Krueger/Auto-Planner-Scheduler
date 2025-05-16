@@ -1,0 +1,55 @@
+// TODO List
+
+// Over time, changes will happen—nothing stays the same, change will happen.
+
+CLASSES: 
+
+	Project/Assignment(Priority, time it'll take, due date, due time(optional?), etc), ... implements: Event
+	Meeting/Appointment(When, start/end times), ..., implements: Event
+	
+	Event (Title: String, Location(Optional): String, repeat(Optional): Repeat, 
+		   Notes(Optional): String, URL(Optional): String)
+		   
+	- Need to have Getters and Setters(to be able to edit if needed), so it wont be Immutable
+	- 
+	
+		
+		
+		
+		
+		Repeat -> ENUM of repetition: ex: Every Day, Every Week, None,
+				  Every 2 Weeks, Every MOnth, Every Year, Custom(ENUM of week: MON, TUE, ..., etc.)
+		Notes -> will be a notes list of todos
+		Priority -> ENUM of 1-10
+		EstimatedTime -> Will be class of ...
+		
+	
+	
+
+	BlockOffDates: use ENUM and need to know times, use HASHMAP<Keys(dates of week) : Values(time blocked off)>
+		Breakfast/Lunch/Dinner Time (BLOCK OFF TIMES/DATES -> sat/sun/etc (LIKE Custom from repeat -> Use same ENUM))
+		
+		
+	Account -> which will determine which Calendar to be used.
+	
+	Parse Data
+	Save Data
+	Account Data (Will read the account file)
+	
+	- Everything needs to be salted and hashed to ensure privacy
+		
+		
+Main BACKGROUND Class:
+
+	Calendar 
+		- HashMap<Date : ArrayList<Event>(Maybe not an ArrayList?)>
+		- Bunch of getters and setters, and talk with Event Class
+		- Need to also talk to BlockOffDates, Be an instance variable
+		
+	Settings
+		- be able to change theme colors
+		- be able to edit block off dates -> once updated will call Calendar class to change it
+		- logout 
+		
+		
+		
