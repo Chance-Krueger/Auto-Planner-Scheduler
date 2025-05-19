@@ -31,22 +31,24 @@ CLASSES:
 		
 		
 	Account -> which will determine which Calendar to be used.
+		Account Data (Will read the account file)
+
 	
-	Parse Data
-	Save Data
-	Account Data (Will read the account file)
+	+ Parse Data -> need to finish the rest
+	+ Save Data -> need to finish the rest
 	
+		
 	- Everything needs to be salted and hashed to ensure privacy
 		
 		
 Main BACKGROUND Class:
 
-	Calendar 
+	+ Calendar 
 		- HashMap<Date : ArrayList<Event>(Maybe not an ArrayList?)>
 		- Bunch of getters and setters, and talk with Event Class
 		- Need to also talk to BlockOffDates, Be an instance variable
 		
-	Settings
+	+ Settings
 		- be able to change theme colors
 		- be able to edit block off dates -> once updated will call Calendar class to change it
 		- logout 
