@@ -1,51 +1,73 @@
 package model;
 
-import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class MeetingAppt extends Event {
 
 //	Meeting/Appointment(When, start/end times), ..., extends: Event
 
-	private Time date;
-	private Time startTime;
-	private Time endTime;
+	private LocalDateTime date;
+	private LocalTime startTime;
+	private LocalTime endTime;
 
-	public MeetingAppt(String title, Time date, Time startTime, Time endTime) {
+	public MeetingAppt(String title, LocalDateTime date, LocalTime startTime, LocalTime endTime) {
 		super(title);
 		this.date = date;
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}
 
-	public Time getDate() {
+//	private String location;
+//	private HashMap<Repeat, ArrayList<Repeat>> repeatDates;
+//	private String notes;
+//	private String url;
+
+	public MeetingAppt(MeetingAppt ma) {
+		super(ma.getTitle());
+		super.setLocation(ma.getLocation());
+		super.setRepeatDates(ma.getRepeatDates());
+		super.setNotes(ma.getNotes());
+		super.setUrl(ma.getUrl());
+
+		this.date = ma.date;
+		this.startTime = ma.startTime;
+		this.endTime = ma.endTime;
+	}
+
+	public LocalDateTime getDate() {
 		return date;
 	}
 
-	public void setDate(Time date) {
+	// ESCAPING REFERENCE?
+	public void setDate(LocalDateTime date) {
 		this.date = date;
 	}
 
-	public Time getStartTime() {
+	public LocalTime getStartTime() {
 		return startTime;
 	}
 
-	public void setStartTime(Time startTime) {
+	// ESCAPING REFERENCE?
+	public void setStartTime(LocalTime startTime) {
 		this.startTime = startTime;
 	}
 
-	public Time getEndTime() {
+	public LocalTime getEndTime() {
 		return endTime;
 	}
 
-	public void setEndTime(Time endTime) {
+	// ESCAPING REFERENCE?
+	public void setEndTime(LocalTime endTime) {
 		this.endTime = endTime;
 	}
 
 	@Override
 	public String toString() {
-
-		return this.getTitle() + " is on " + this.date.toString() + " and starts from " + this.startTime.toString()
-				+ " and will wend at " + this.endTime.toString();
+		return this.getTitle() + " is on " + this.date.getMonth() + "/" + this.date.getDayOfMonth() + "/"
+				+ this.date.getYear() + " and starts from " + this.startTime.getHour() + ":"
+				+ this.startTime.getMinute() + " and will wend at " + this.endTime.getHour() + ":"
+				+ this.endTime.getMinute() + ".";
 	}
 
 }

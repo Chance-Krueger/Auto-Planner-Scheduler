@@ -38,7 +38,10 @@ CLASSES:
 	+ Save Data -> need to finish the rest
 	
 		
-	- Everything needs to be salted and hashed to ensure privacy
+	+ Everything needs to be salted and hashed to ensure privacy
+	+ Look Up how to make documents in Macs/Windows/etc to make private so it 
+		can't be open unless program calls it
+	
 		
 		
 Main BACKGROUND Class:
@@ -47,11 +50,29 @@ Main BACKGROUND Class:
 		- HashMap<Date : ArrayList<Event>(Maybe not an ArrayList?)>
 		- Bunch of getters and setters, and talk with Event Class
 		- Need to also talk to BlockOffDates, Be an instance variable
+		- Settings settings; -> instance VAR
 		
-	+ Settings
+		++ **FOR CALENDAR CLASS, NEED TO MAKE REPEATS WORK IN THE HASHMAP**
+			- WHEN ADJUSTING REPEAT TO RECALCULATE AND DELETE PREV REPEATS
+			- WHEN ADDING AN EVENT TO PUT THE REPEAT IN ITS PROPER PLACE IN HASHMAP
+			- NEED TO CAP OFF HOW MANY DAYS IN ADAVANCE FOR REPEATS, (COULD BE INFINITE)
+			- WORRY ABOUT LAST BEFORE SORTING AND ADJUSTING SCHEDULER
+				- FIRST MAKE IT A CALENDAR THEN IT CAN BE A SCHEDULER
+		
+		
+	Settings
 		- be able to change theme colors
-		- be able to edit block off dates -> once updated will call Calendar class to change it
+		- be able to edit block off dates -> // once updated will call Calendar class to change it (WONT NEED TO)
 		- logout 
+		
+			
+	+ Scheduler
+		- will have the calendar, and all the Projects/Assignments
+			- will the base it and find the best times to organize everything
+		- will do all the calculations necessary to place all the assignments in it's correct spot
+			- hence Scheduling everything.
+		- will give blocked off dates/meetings right of way then the rest will be filled with Projects/assignments
+		- this will be done through the priority, the due date, and the amount of time expected to take.
 		
 		
 		

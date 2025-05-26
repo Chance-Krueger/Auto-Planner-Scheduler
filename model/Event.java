@@ -15,7 +15,7 @@ public class Event {
 
 	private String title;
 	private String location;
-	private HashMap<Repeat, ArrayList<Repeat>> repeatDates;
+	private Map<Repeat, ArrayList<Repeat>> repeatDates;
 	private String notes;
 	private String url;
 
@@ -25,6 +25,14 @@ public class Event {
 		this.repeatDates = new HashMap<Repeat, ArrayList<Repeat>>();
 		this.notes = "";
 		this.url = "";
+	}
+
+	public Event(Event e) {
+		this.title = e.title;
+		this.location = e.location;
+		this.repeatDates = e.repeatDates;
+		this.notes = e.notes;
+		this.url = e.url;
 	}
 
 	public String getTitle() {
@@ -45,6 +53,11 @@ public class Event {
 
 	public Map<Repeat, ArrayList<Repeat>> getRepeatDates() {
 		return Collections.unmodifiableMap(this.repeatDates);
+	}
+
+	// ESCAPING REFERENCE?
+	public void setRepeatDates(Map<Repeat, ArrayList<Repeat>> repeatDates2) {
+		this.repeatDates = repeatDates2;
 	}
 
 	/*
@@ -130,9 +143,10 @@ public class Event {
 		return string;
 	}
 
-//	public static void main(String[] args) {
-//		// TODO Auto-generated method stub
-//
-//	}
-
+	@Override
+	public boolean equals(Object e) {
+		return ((Event) (e)).title.equals(this.title) && ((Event) (e)).location.equals(this.location)
+				&& ((Event) (e)).notes.equals(this.notes) && ((Event) (e)).url.equals(this.url)
+				&& ((Event) (e)).repeatDates.equals(this.repeatDates);
+	}
 }

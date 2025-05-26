@@ -8,7 +8,7 @@ import model.Account;
 import model.Account.Question;
 import model.AccountDataBase;
 
-class testAccountDataBase {
+class TestAccountDataBase {
 	AccountDataBase db = new AccountDataBase();
 
 	@Test
@@ -58,6 +58,40 @@ class testAccountDataBase {
 		Account user = new Account("username", "password", "answer", Question.ONE);
 		assertTrue(db.authenticateSecurityQuestion("username", "answer"));
 		assertFalse(db.authenticateSecurityQuestion("username", "wrongAnswer"));
+	}
+
+	@Test
+	void testChangePassword() {
+		Account user = new Account("username", "password", "answer", Question.ONE);
+		assertTrue(user.getHashedPassword().equals(AccountDataBase.hashPassword("password", user.getSalt())));
+		user.changePassword("password!123");
+		assertTrue(user.getHashedPassword().equals(AccountDataBase.hashPassword("password!123", user.getSalt())));
+
+	}
+
+	@Test
+	void testFromIntQuestion() {
+		Question q1 = Question.ONE;
+		assertEquals(Question.fromInt(1), q1);
+		Question q2 = Question.TWO;
+		assertEquals(Question.fromInt(2), q2);
+		Question q3 = Question.THREE;
+		assertEquals(Question.fromInt(3), q3);
+		Question q4 = Question.FOUR;
+		assertEquals(Question.fromInt(4), q4);
+	}
+
+	@Test
+	void testFromStringQuestion() {
+		Question q1 = Question.ONE;
+		assertEquals(Question.fromString("1"), q1);
+		Question q2 = Question.TWO;
+		assertEquals(Question.fromString("2"), q2);
+		Question q3 = Question.THREE;
+		assertEquals(Question.fromString("3"), q3);
+		Question q4 = Question.FOUR;
+		assertEquals(Question.fromString("4"), q4);
+
 	}
 
 }
