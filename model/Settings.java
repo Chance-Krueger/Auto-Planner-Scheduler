@@ -3,6 +3,7 @@ package model;
 import java.awt.Color;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class Settings {
 
@@ -44,8 +45,8 @@ public class Settings {
 		this.accentColor = accentColor;
 	}
 
-	public void changeBlockedTimeOfDay(int day, ArrayList<LocalTime> times) {
-		this.bod.changeBlockedTimeOfDay(Repeat.dayOfWeek(day), new ArrayList<LocalTime>(times));
+	public void changeBlockedTimeOfDay(int day, ArrayList<Set<LocalTime>> times) {
+		this.bod.changeBlockedTimeOfDay(Repeat.dayOfWeek(day), new ArrayList<Set<LocalTime>>(times));
 	}
 
 }

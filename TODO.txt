@@ -42,6 +42,8 @@ CLASSES:
 	+ Look Up how to make documents in Macs/Windows/etc to make private so it 
 		can't be open unless program calls it
 	
+	+ Want to use SQL to save data and load data instead of writing it to a file.
+		+ Will have to still have it salted and change how Account works.
 		
 		
 Main BACKGROUND Class:
@@ -75,4 +77,5 @@ Main BACKGROUND Class:
 		- this will be done through the priority, the due date, and the amount of time expected to take.
 		
 		
+	
 		
