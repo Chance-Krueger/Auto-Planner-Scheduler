@@ -49,4 +49,7 @@ public class Settings {
 		this.bod.changeBlockedTimeOfDay(Repeat.dayOfWeek(day), new ArrayList<Set<LocalTime>>(times));
 	}
 
+	public void changeBlockedTimeOfDay(Repeat day, ArrayList<Set<LocalTime>> times) {
+		this.bod.changeBlockedTimeOfDay(day, new ArrayList<Set<LocalTime>>(times));
+	}
 }

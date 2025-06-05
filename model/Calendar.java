@@ -10,12 +10,6 @@ import java.util.Set;
 
 public class Calendar {
 
-//	+ Calendar 
-//		- HashMap<Date : ArrayList<Event>(Maybe not an ArrayList?)>
-//		- Bunch of getters and setters, and talk with Event Class
-//		- Need to also talk to BlockOffDates, Be an instance variable
-//		- Settings settings; -> instance VAR
-
 	private HashMap<LocalDate, ArrayList<Event>> calendar;
 	private Settings settings;
 
@@ -167,10 +161,12 @@ public class Calendar {
 		return false;
 	}
 
+	// PARAM BE A STRING?
 	public void adjustThemeColor(Color c) {
 		this.settings.setThemeColor(c);
 	}
 
+	// PARAM BE A STRING?
 	public void adjustAccentColor(Color c) {
 		this.settings.setAccentColor(c);
 	}

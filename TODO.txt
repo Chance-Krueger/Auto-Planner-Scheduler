@@ -30,20 +30,22 @@ CLASSES:
 		Breakfast/Lunch/Dinner Time (BLOCK OFF TIMES/DATES -> sat/sun/etc (LIKE Custom from repeat -> Use same ENUM))
 		
 		
+	+ ** NEED TO MAKE SURE TO LIMIT READ AND WRITE PERMS **
 	Account -> which will determine which Calendar to be used.
 		Account Data (Will read the account file)
 
 	
-	+ Parse Data -> need to finish the rest
-	+ Save Data -> need to finish the rest
-	
+	+ **WILL BE USING SQL, TO SHOW WORK, WILL START THIS PORTION AFTER BOOTCAMP**
+		+ Parse Data -> need to finish the rest
+		+ Save Data -> need to finish the rest
 		
-	+ Everything needs to be salted and hashed to ensure privacy
-	+ Look Up how to make documents in Macs/Windows/etc to make private so it 
-		can't be open unless program calls it
-	
-	+ Want to use SQL to save data and load data instead of writing it to a file.
-		+ Will have to still have it salted and change how Account works.
+			
+		+ Everything needs to be salted and hashed to ensure privacy
+		+ Look Up how to make documents in Macs/Windows/etc to make private so it 
+			can't be open unless program calls it
+		
+		+ Want to use SQL to save data and load data instead of writing it to a file.
+			+ Will have to still have it salted and change how Account works.
 		
 		
 Main BACKGROUND Class:
