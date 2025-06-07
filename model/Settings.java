@@ -21,6 +21,12 @@ public class Settings {
 		this.accentColor = Color.LIGHT_GRAY;
 	}
 
+	public Settings(Settings settings) {
+		this.bod = settings.bod;
+		this.themeColor = settings.themeColor;
+		this.accentColor = settings.accentColor;
+	}
+
 	public BlockOffDates getBod() {
 		return new BlockOffDates(bod);
 	}

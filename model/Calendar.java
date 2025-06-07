@@ -4,13 +4,15 @@ import java.awt.Color;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class Calendar {
 
-	private HashMap<LocalDate, ArrayList<Event>> calendar;
+	private HashMap<LocalDate, ArrayList<Event>> calendar; // KEYS-> DATE(00/00/0000) : VALUES-> EVENTS
 	private Settings settings;
 
 	public Calendar() {
@@ -21,6 +23,14 @@ public class Calendar {
 	public Calendar(Calendar c) {
 		this.calendar = c.calendar;
 		this.settings = c.settings;
+	}
+
+	public Map<LocalDate, ArrayList<Event>> getCalendar() {
+		return Collections.unmodifiableMap(this.calendar);
+	}
+
+	public Settings getSettings() {
+		return new Settings(settings);
 	}
 
 	public void addEventToCalendar(ProjAssn pj) {
@@ -60,9 +70,13 @@ public class Calendar {
 			return false;
 
 		ArrayList<Event> adjusted = this.calendar.get(ld);
-		adjusted.remove(e);
-		this.calendar.put(ld, adjusted);
-		return true;
+
+		if (adjusted.remove(e)) {
+			this.calendar.put(ld, adjusted);
+			return true;
+		}
+
+		return false;
 
 	}
 
@@ -152,7 +166,7 @@ public class Calendar {
 
 		for (Event copyE : copy) {
 			if (copyE.equals(e)) {
-				if (copyE.setRepeatDates(list))
+				if (e.setRepeatDates(list))
 					return true;
 				return false;
 			}
@@ -196,27 +210,29 @@ public class Calendar {
 			// Current Set is not legal (has to be 2, start/end times)
 			if (s.size() != 2)
 				return false;
+
 			String[] timesArray = null;
 			try {
-				timesArray = (String[]) s.toArray();
+				timesArray = s.toArray(new String[0]);
 			} catch (Exception e) {
 				// Was not a String (Should never hit since the parameter is String)
 				return false;
 			}
+
 			LocalTime l1 = LocalTime.parse(timesArray[0]);
 			LocalTime l2 = LocalTime.parse(timesArray[1]);
+
 			// THE TIMES ARE NOT IN ORDER
-			if (l1.compareTo(l2) < 0) {
+			if (l1.isAfter(l2)) {
 				l1 = LocalTime.parse(timesArray[1]);
 				l2 = LocalTime.parse(timesArray[0]);
-			} else {
-				Set<LocalTime> set = new HashSet<LocalTime>();
-				set.add(l1);
-				set.add(l2);
-				// CONVERT EACH STRING OF TIMES TO LocalTime
-				newList.add(set);
 			}
 
+			Set<LocalTime> set = new HashSet<LocalTime>();
+			set.add(l1);
+			set.add(l2);
+			// CONVERT EACH STRING OF TIMES TO LocalTime
+			newList.add(set);
 		}
 
 		// PUT NEW ARRAYLIST INTO HASHMAP
