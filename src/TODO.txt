@@ -79,5 +79,49 @@ Main BACKGROUND Class:
 		- this will be done through the priority, the due date, and the amount of time expected to take.
 		
 		
+		
+		
+		
+		
+		
+		
+├── model/                 ← backend logic & data (Account, Event, EventManager)
+│   ├── Account.java
+│   ├── Event.java
+│   └── EventManager.java
+│
+├── mvcmodel/              ← Model layer in MVC (Observable interfaces)
+│   ├── UserModel.java
+│   ├── EventModel.java
+│   └── ReminderModel.java
+│
+├── view/                  ← GUI classes (views)
+│   ├── LoginView.java
+│   ├── CalendarView.java
+│   └── SettingsView.java
+│
+├── controller/            ← Controllers (button logic, user actions)
+│   ├── LoginController.java
+│   ├── CalendarController.java
+│   └── SettingsController.java
+│
+└── main/                  ← Entry point (Main.java, app setup)
+    └── Main.java
 	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
