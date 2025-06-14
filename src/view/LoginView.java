@@ -55,7 +55,7 @@ public class LoginView {
 		txtPassword = new JTextField();
 		txtPassword.setToolTipText("");
 		txtPassword.setForeground(Color.DARK_GRAY);
-		txtPassword.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+		txtPassword.setFont(new Font("PT Sans", Font.PLAIN, 13));
 		txtPassword.setColumns(10);
 		txtPassword.setBackground(Color.WHITE);
 		txtPassword.setBounds(312, 325, 335, 42);
@@ -63,7 +63,7 @@ public class LoginView {
 		
 		labelEmailAddress = new JTextField();
 		labelEmailAddress.setForeground(Color.DARK_GRAY);
-		labelEmailAddress.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+		labelEmailAddress.setFont(new Font("PT Sans", Font.PLAIN, 13));
 		labelEmailAddress.setBackground(new Color(255, 255, 255));
 		labelEmailAddress.setBounds(312, 263, 335, 42);
 		frame.getContentPane().add(labelEmailAddress);

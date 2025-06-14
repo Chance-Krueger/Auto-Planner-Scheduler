@@ -50,7 +50,7 @@ CLASSES:
 		
 Main BACKGROUND Class:
 
-	+ Calendar 
+	Calendar 
 		- HashMap<Date : ArrayList<Event>(Maybe not an ArrayList?)>
 		- Bunch of getters and setters, and talk with Event Class
 		- Need to also talk to BlockOffDates, Be an instance variable
@@ -109,6 +109,15 @@ Main BACKGROUND Class:
     └── Main.java
 	
 		
+		
+	+ Need to make the calendar view, Forgot Password view, Sign up view
+	+ Need to make buttons actually work
+		- Start with login frame, will be the easiest to make
+			- will have to align it with the Observer for it
+		- Need to figure out how to do the BOD and the theme colors be editable
+		- Need to Make the account text box be adjusted to the current account logged in.
+			- Same with the Current Color.
+	+ Need to make the picture smaller in the Main Menu view
 		
 		
 		
