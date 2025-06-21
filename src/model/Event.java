@@ -5,6 +5,46 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The {@code Event} class serves as an abstract representation of a general
+ * calendar event. It provides shared fields and behavior for more specific
+ * event types such as {@code ProjAssn} (project/assignment) and
+ * {@code MeetingAppt} (meeting/appointment), which extend this class.
+ * 
+ * <p>
+ * Each event contains the following optional and required attributes:
+ * <ul>
+ * <li><b>title</b> — a required {@code String} that names the event</li>
+ * <li><b>location</b> — an optional {@code String} describing the event's
+ * location</li>
+ * <li><b>repeatDates</b> — a {@code Map<Repeat, ArrayList<Repeat>>} that stores
+ * the recurrence type and specific days</li>
+ * <li><b>notes</b> — an optional {@code String} for user-entered notes</li>
+ * <li><b>url</b> — an optional {@code String} containing a link related to the
+ * event</li>
+ * </ul>
+ *
+ * <p>
+ * The class provides methods to update each attribute, as well as a utility
+ * method {@code setRepeatDates(List<String>)} that parses user-supplied repeat
+ * patterns and validates them into structured {@code Repeat} enums. This method
+ * includes internal error-checking for input formatting and value correctness.
+ * 
+ * <p>
+ * Equality between events is defined based on all fields being equal, including
+ * the deep content of the {@code repeatDates} map.
+ *
+ * <p>
+ * Note: While this class is not explicitly abstract, it is designed to be
+ * extended by more specific types of events with date/time information.
+ *
+ * @see Repeat
+ * @see ProjAssn
+ * @see MeetingAppt
+ * 
+ * @author Chance Krueger
+ */
+
 public class Event {
 
 //	Project/Assignment(Priority, time it'll take, due date, due time(optional?), etc), ... extends: Event
@@ -27,6 +67,20 @@ public class Event {
 		this.url = "";
 	}
 
+	/**
+	 * Constructs a new {@code Event} as a copy of the specified {@code Event}.
+	 * Copies all field values including title, location, notes, URL, and repeat
+	 * date mappings.
+	 * 
+	 * <p>
+	 * <b>Note:</b> This constructor performs a shallow copy of the
+	 * {@code repeatDates} map. If the caller or other objects mutate the original
+	 * {@code repeatDates} map or its internal lists, those changes will reflect in
+	 * the copy. For full immutability, a deep copy is recommended.
+	 *
+	 * @param e the {@code Event} to copy
+	 * @throws NullPointerException if {@code e} is {@code null}
+	 */
 	public Event(Event e) {
 		this.title = e.title;
 		this.location = e.location;
@@ -35,45 +89,87 @@ public class Event {
 		this.url = e.url;
 	}
 
+	/**
+	 * Gets the event title.
+	 *
+	 * @return the title of the event
+	 */
 	public String getTitle() {
 		return title;
 	}
 
+	/**
+	 * Sets the event title.
+	 *
+	 * @param title the new title of the event
+	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
+	/**
+	 * Gets the event location.
+	 *
+	 * @return the location of the event
+	 */
 	public String getLocation() {
 		return location;
 	}
 
+	/**
+	 * Sets the event location.
+	 *
+	 * @param location the new location of the event
+	 */
 	public void setLocation(String location) {
 		this.location = location;
 	}
 
+	/**
+	 * Gets the repeat dates map.
+	 *
+	 * @return an unmodifiable map of repeat types and their values
+	 */
 	public Map<Repeat, ArrayList<Repeat>> getRepeatDates() {
 		return Collections.unmodifiableMap(this.repeatDates);
 	}
 
 	// ESCAPING REFERENCE?
+	/**
+	 * Sets the repeat dates map.
+	 *
+	 * @param repeatDates2 the map of repeat types and values to set
+	 */
 	public void setRepeatDates(Map<Repeat, ArrayList<Repeat>> repeatDates2) {
 		this.repeatDates = repeatDates2;
 	}
 
-	/*
+	/**
+	 * Sets the repeat schedule for this event based on a list of {@code String}
+	 * inputs. The first element in the list must represent a valid repeat pattern
+	 * type from the {@code Repeat} enum (e.g., {@code EVERYWEEK}, {@code CUSTOM},
+	 * etc.). The remaining elements, if applicable, must represent valid days of
+	 * the week (e.g., {@code MON}, {@code TUE}).
 	 * 
-	 * setRepeatDates(ArrayList<String> repeatRequirements) takes an ArrayList of
-	 * Strings. It will check to see if the first index in the List is an Actual
-	 * repeat type instead of a date or a word that is not able to be in the ENUM.
-	 * If it is then it will go through the rest of the ArrayList to see if its
-	 * valid (ERROR CHECKING). If it is, it'll add the Date with the specific repeat
-	 * type into the HashMap, where the repeat type is the keys and the specific
-	 * date is the value.
+	 * <p>
+	 * The method performs input validation to ensure the repeat type and its
+	 * associated parameters are recognized. If the repeat type is
+	 * {@code EVERYMONTH} or {@code EVERYYEAR}, no additional days are expected, and
+	 * the method succeeds if the list contains exactly one element.
 	 * 
-	 * @returns a boolean. Either true if there was no errors seen, false if there
-	 * was an error seen. Errors seen could either be from 1. the first index in the
-	 * ArrayList is not a specific type of repeat or 2. everything from index 1: is
-	 * not in the Days of the Week.
+	 * <p>
+	 * If all input values are valid, the internal {@code repeatDates} map is
+	 * updated with the new configuration.
+	 * 
+	 * @param repeatRequirements an {@code ArrayList<String>} where the first
+	 *                           element specifies the repeat type and the remaining
+	 *                           elements specify repeat days (if applicable)
+	 * @return {@code true} if the input is valid and the repeat schedule was
+	 *         successfully set; {@code false} if the input format is invalid or
+	 *         contains unrecognized values
+	 * @throws NullPointerException if {@code repeatRequirements} is {@code null} or
+	 *                              contains {@code null} entries
+	 * @see Repeat
 	 */
 	public boolean setRepeatDates(ArrayList<String> repeatRequirements) {
 
@@ -116,18 +212,38 @@ public class Event {
 		return true;
 	}
 
+	/**
+	 * Gets the notes for the event.
+	 *
+	 * @return the notes associated with the event
+	 */
 	public String getNotes() {
 		return notes;
 	}
 
+	/**
+	 * Sets the notes for the event.
+	 *
+	 * @param notes the new notes for the event
+	 */
 	public void setNotes(String notes) {
 		this.notes = notes;
 	}
 
+	/**
+	 * Gets the URL for the event.
+	 *
+	 * @return the URL associated with the event
+	 */
 	public String getUrl() {
 		return url;
 	}
 
+	/**
+	 * Sets the URL for the event.
+	 *
+	 * @param url the new URL for the event
+	 */
 	public void setUrl(String url) {
 		this.url = url;
 	}
