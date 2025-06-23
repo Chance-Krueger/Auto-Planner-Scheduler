@@ -7,16 +7,31 @@ import javax.swing.JLabel;
 import java.awt.Color;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
+
+import model.AccountDataBase;
+
 import javax.swing.JTextField;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
-import javax.swing.DropMode;
 
 public class LoginView {
 
 	private JFrame frame;
 	private JTextField labelEmailAddress;
 	private JTextField txtPassword;
+
+	// BUTTONS
+	private JButton loginButton;
+	private JButton signupButton;
+	private JButton forgotButton;
+	private JLabel loginImage;
+	private JLabel backgroundColor;
+
+	// CLASSES
+	private AccountDataBase adb;
 
 	/**
 	 * Launch the application.
@@ -38,7 +53,39 @@ public class LoginView {
 	 * Create the application.
 	 */
 	public LoginView() {
+		adb = new AccountDataBase();
 		initialize();
+	}
+
+	// IF TRUE, NEED TO SEND TO NEXT SCREEN, (Main Menu Screen)
+	private void attemptLogin() {
+
+		String email = this.labelEmailAddress.getText();
+		String password = this.txtPassword.getText();
+
+		String[] sArray = { email, password };
+
+		if (!this.adb.authenticate(email, password)) {
+			incorrectLogin();
+		} else {
+			this.frame.dispose();
+			MainMenuView.main(sArray);
+		}
+	}
+
+	private void incorrectLogin() {
+		System.err.println("Incorrect Information. Please Try Again.");
+		return;
+	}
+
+	private void forgotPassword() {
+
+	}
+
+	private void signUp() {
+//		// Hide the current screen
+		this.frame.dispose(); // This closes LoginView cleanly
+		SignUpView.main(null);
 	}
 
 	/**
@@ -51,7 +98,7 @@ public class LoginView {
 		frame.setBounds(100, 100, 982, 576);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
-		
+
 		txtPassword = new JTextField();
 		txtPassword.setToolTipText("");
 		txtPassword.setForeground(Color.DARK_GRAY);
@@ -60,7 +107,7 @@ public class LoginView {
 		txtPassword.setBackground(Color.WHITE);
 		txtPassword.setBounds(312, 325, 335, 42);
 		frame.getContentPane().add(txtPassword);
-		
+
 		labelEmailAddress = new JTextField();
 		labelEmailAddress.setForeground(Color.DARK_GRAY);
 		labelEmailAddress.setFont(new Font("PT Sans", Font.PLAIN, 13));
@@ -68,31 +115,38 @@ public class LoginView {
 		labelEmailAddress.setBounds(312, 263, 335, 42);
 		frame.getContentPane().add(labelEmailAddress);
 		labelEmailAddress.setColumns(10);
-		
-		JButton loginButton = new JButton("");
+
+		this.loginButton = new JButton("");
 		loginButton.setBorder(null);
 		loginButton.setBounds(265, 379, 382, 51);
 		frame.getContentPane().add(loginButton);
-		
-		JButton signupButton = new JButton("");
+
+		this.signupButton = new JButton("");
 		signupButton.setBorder(null);
 		signupButton.setBounds(394, 470, 133, 29);
 		frame.getContentPane().add(signupButton);
-		
-		JButton btnNewButton = new JButton("");
-		btnNewButton.setBorder(null);
-		btnNewButton.setBounds(379, 434, 155, 35);
-		frame.getContentPane().add(btnNewButton);
-		
-		JLabel loginImage = new JLabel("");
+
+		this.forgotButton = new JButton("");
+		forgotButton.setBorder(null);
+		forgotButton.setBounds(379, 434, 155, 35);
+		frame.getContentPane().add(forgotButton);
+
+		this.loginImage = new JLabel("");
 		loginImage.setVerticalAlignment(SwingConstants.TOP);
-		loginImage.setIcon(new ImageIcon("/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/loginPanelImage4.png"));
+		loginImage.setIcon(new ImageIcon(
+				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/loginPanelImage4.png"));
 		loginImage.setBounds(58, 0, 1536, 1024);
 		frame.getContentPane().add(loginImage);
-		
-		JLabel backgroundColor = new JLabel("");
+
+		this.backgroundColor = new JLabel("");
 		backgroundColor.setBackground(new Color(63, 63, 63));
 		backgroundColor.setBounds(58, 0, 982, 548);
 		frame.getContentPane().add(backgroundColor);
+
+		// ACTION LISTENERS
+		this.loginButton.addActionListener(e -> attemptLogin());
+		this.forgotButton.addActionListener(e -> forgotPassword());
+		this.signupButton.addActionListener(e -> signUp());
+
 	}
 }
