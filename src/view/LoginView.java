@@ -27,11 +27,15 @@ public class LoginView {
 	private JButton loginButton;
 	private JButton signupButton;
 	private JButton forgotButton;
+
 	private JLabel loginImage;
 	private JLabel backgroundColor;
 
+	private boolean isError;
+
 	// CLASSES
 	private AccountDataBase adb;
+	private JLabel errorMessage;
 
 	/**
 	 * Launch the application.
@@ -53,12 +57,15 @@ public class LoginView {
 	 * Create the application.
 	 */
 	public LoginView() {
+		isError = false;
 		adb = new AccountDataBase();
 		initialize();
 	}
 
 	// IF TRUE, NEED TO SEND TO NEXT SCREEN, (Main Menu Screen)
 	private void attemptLogin() {
+
+		errorMessage.setVisible(false);
 
 		String email = this.labelEmailAddress.getText();
 		String password = this.txtPassword.getText();
@@ -74,12 +81,15 @@ public class LoginView {
 	}
 
 	private void incorrectLogin() {
+		this.isError = true;
 		System.err.println("Incorrect Information. Please Try Again.");
+		errorMessage.setVisible(true);
 		return;
 	}
 
 	private void forgotPassword() {
-
+		this.frame.dispose();
+		ForgotPasswordEmailConfirmation.main(null);
 	}
 
 	private void signUp() {
@@ -98,6 +108,12 @@ public class LoginView {
 		frame.setBounds(100, 100, 982, 576);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+
+		errorMessage = new JLabel("Incorrect Information. Please Try Again.");
+		errorMessage.setForeground(Color.RED);
+		errorMessage.setBounds(379, 235, 268, 16);
+		frame.getContentPane().add(errorMessage);
+		errorMessage.setVisible(false);
 
 		txtPassword = new JTextField();
 		txtPassword.setToolTipText("");

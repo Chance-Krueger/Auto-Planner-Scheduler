@@ -4,54 +4,77 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.ImageIcon;
+import javax.swing.SwingConstants;
 
 import model.Account;
+import model.AccountDataBase;
 
-import javax.swing.ImageIcon;
-import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JButton;
 
 public class MainMenuView {
 
 	private JFrame frame;
-
-	// CLASSES
-	Account account;
-
+	private JButton backButton;
 	private JButton calendarButton;
-
+	private JButton bodButton;
+	private JButton statsButton;
 	private JButton settingsButton;
 
-	private JButton statsButton;
-
-	private JButton blockOffDatesButton;
+	private String[] acct;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					MainMenuView window = new MainMenuView();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
+
+		if (args.length > 0) {
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						MainMenuView window = new MainMenuView(args[0]);
+						window.frame.setVisible(true);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-			}
-		});
+			});
+		} else {
+
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						MainMenuView window = new MainMenuView();
+						window.frame.setVisible(true);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+
+	public MainMenuView(String email) {
+		this.acct = new String[1];
+		this.acct[0] = email;
+		initialize();
+
 	}
 
 	/**
 	 * Create the application.
 	 */
 	public MainMenuView() {
+		this.acct = new String[1];
+		this.acct[0] = "";
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
+	 * 
+	 * @wbp.parser.entryPoint
 	 */
 	private void initialize() {
 		frame = new JFrame();
@@ -60,60 +83,70 @@ public class MainMenuView {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
+		this.backButton = new JButton("");
+		backButton.setBorder(null);
+		backButton.setBounds(303, 67, 352, 36);
+		frame.getContentPane().add(backButton);
+
 		this.calendarButton = new JButton("");
 		calendarButton.setBorder(null);
-		calendarButton.setBounds(252, 280, 202, 27);
+		calendarButton.setBounds(315, 253, 352, 29);
 		frame.getContentPane().add(calendarButton);
 
-		this.settingsButton = new JButton("");
-		settingsButton.setBorder(null);
-		settingsButton.setBounds(252, 374, 202, 27);
-		frame.getContentPane().add(settingsButton);
+		this.bodButton = new JButton("");
+		bodButton.setBorder(null);
+		bodButton.setBounds(315, 311, 352, 29);
+		frame.getContentPane().add(bodButton);
 
 		this.statsButton = new JButton("");
 		statsButton.setBorder(null);
-		statsButton.setBounds(252, 342, 202, 27);
+		statsButton.setBounds(315, 367, 352, 29);
 		frame.getContentPane().add(statsButton);
 
-		this.blockOffDatesButton = new JButton("");
-		blockOffDatesButton.setBorder(null);
-		blockOffDatesButton.setBounds(252, 319, 202, 21);
-		frame.getContentPane().add(blockOffDatesButton);
+		this.settingsButton = new JButton("");
+		settingsButton.setBorder(null);
+		settingsButton.setBounds(315, 420, 352, 29);
+		frame.getContentPane().add(settingsButton);
 
-		JLabel mainMenuImage = new JLabel("");
-		mainMenuImage.setIcon(
-				new ImageIcon("/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/MainMenuImage.png"));
-		mainMenuImage.setBounds(189, 0, 581, 548);
-		frame.getContentPane().add(mainMenuImage);
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setBounds(170, 0, 640, 548);
+		lblNewLabel.setIcon(new ImageIcon(
+				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/MainMenuBackgroundImage.png"));
+		frame.getContentPane().add(lblNewLabel);
 
+		// ACTION LISTENERS
 		this.calendarButton.addActionListener(e -> calendar());
+		this.bodButton.addActionListener(e -> bod());
+		this.statsButton.addActionListener(e -> stats());
 		this.settingsButton.addActionListener(e -> settings());
-		this.statsButton.addActionListener(e -> statistics());
-		this.blockOffDatesButton.addActionListener(e -> bod());
-
+		this.backButton.addActionListener(e -> backArrow());
 	}
 
-	private void bod() {
-		// TODO Auto-generated method stub
-		System.out.println("bod");
-	}
-
-	private void statistics() {
-		// TODO Auto-generated method stub
-		System.out.println("bod");
-
+	private void backArrow() {
+		// Add pop up window to confirm they want to log out
+		// if accepted go back to login window
+		// else break;
 	}
 
 	private void settings() {
-		// TODO Auto-generated method stub
-		System.out.println("bod");
+		this.frame.dispose();
+		SettingsView.main(this.acct);
+	}
 
+	private void stats() {
+		// TODO Auto-generated method stub
+	}
+
+	private void bod() {
+		this.frame.dispose();
+		String[] sArray = new String[2];
+		sArray[0] = this.acct[0];
+		sArray[1] = "MainMenuView";
+		BlockOffDatesView.main(sArray);
 	}
 
 	private void calendar() {
 		// TODO Auto-generated method stub
-		System.out.println("bod");
-
 	}
 
 }
