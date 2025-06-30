@@ -1,6 +1,8 @@
 package test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -36,25 +38,25 @@ public class TestBlockOffDates {
 		s2.add(LocalTime.of(17, 0));
 
 		times.add(s2);
-		bfd.changeBlockedTimeOfDay(Repeat.MON, times);
+//		bfd.changeBlockedTimeOfDay(Repeat.MON, times);
 
 		s3.add(LocalTime.of(11, 0));
 		s3.add(LocalTime.of(11, 30));
 		ArrayList<Set<LocalTime>> times1 = new ArrayList<Set<LocalTime>>();
 		times1.add(s3);
-		bfd.changeBlockedTimeOfDay(Repeat.TUE, times1);
+//		bfd.changeBlockedTimeOfDay(Repeat.TUE, times1);
 
 		s4.add(LocalTime.of(7, 30));
 		s4.add(LocalTime.of(9, 0));
 		ArrayList<Set<LocalTime>> times2 = new ArrayList<Set<LocalTime>>();
 		times2.add(s4);
-		bfd.changeBlockedTimeOfDay(Repeat.WED, times2);
+//		bfd.changeBlockedTimeOfDay(Repeat.WED, times2);
 
 		s5.add(LocalTime.of(11, 30));
 		s5.add(LocalTime.of(13, 0));
 		ArrayList<Set<LocalTime>> times3 = new ArrayList<Set<LocalTime>>();
 		times3.add(s5);
-		bfd.changeBlockedTimeOfDay(Repeat.THR, times3);
+//		bfd.changeBlockedTimeOfDay(Repeat.THR, times3);
 
 		assertEquals(bfd.getBlockedDates().get(Repeat.MON).size(), 1);
 		assertEquals(bfd.getBlockedDates().get(Repeat.TUE).size(), 1);
@@ -81,25 +83,25 @@ public class TestBlockOffDates {
 		s2.add(LocalTime.of(17, 0));
 
 		times.add(s2);
-		bfd.changeBlockedTimeOfDay(Repeat.MON, times);
+//		bfd.changeBlockedTimeOfDay(Repeat.MON, times);
 
 		s3.add(LocalTime.of(11, 0));
 		s3.add(LocalTime.of(11, 30));
 		ArrayList<Set<LocalTime>> times1 = new ArrayList<Set<LocalTime>>();
 		times1.add(s3);
-		bfd.changeBlockedTimeOfDay(Repeat.TUE, times1);
+//		bfd.changeBlockedTimeOfDay(Repeat.TUE, times1);
 
 		s4.add(LocalTime.of(7, 30));
 		s4.add(LocalTime.of(9, 0));
 		ArrayList<Set<LocalTime>> times2 = new ArrayList<Set<LocalTime>>();
 		times2.add(s4);
-		bfd.changeBlockedTimeOfDay(Repeat.WED, times2);
+//		bfd.changeBlockedTimeOfDay(Repeat.WED, times2);
 
 		s5.add(LocalTime.of(11, 30));
 		s5.add(LocalTime.of(13, 0));
 		ArrayList<Set<LocalTime>> times3 = new ArrayList<Set<LocalTime>>();
 		times3.add(s5);
-		bfd.changeBlockedTimeOfDay(Repeat.THR, times3);
+//		bfd.changeBlockedTimeOfDay(Repeat.THR, times3);
 		
 		BlockOffDates bfd1 = new BlockOffDates(bfd);
 
@@ -110,6 +112,12 @@ public class TestBlockOffDates {
 		assertEquals(bfd1.getBlockedDates().get(Repeat.FRI).size(), 0);
 		assertEquals(bfd1.getBlockedDates().get(Repeat.SAT).size(), 0);
 		assertEquals(bfd1.getBlockedDates().get(Repeat.SUN).size(), 0);
+	}
+	
+	// NEED TO FIX THE TEST CASES
+	@Test
+	void failTEST() throws Exception {
+		throw new Exception();
 	}
 
 }

@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import javax.swing.JTextField;
@@ -20,7 +21,7 @@ public class SignUpView {
 
 	private JFrame frame;
 	private JTextField emailText;
-	private JTextField passwordText;
+	private JPasswordField passwordText;
 	private JLabel SecurityQuestionLabel;
 	private JTextField answerText;
 	private JButton signupButton;
@@ -138,7 +139,7 @@ public class SignUpView {
 		answerText.setBounds(314, 410, 371, 40);
 		frame.getContentPane().add(answerText);
 
-		passwordText = new JTextField();
+		passwordText = new JPasswordField();
 		passwordText.setFont(new Font("PT Sans Caption", Font.PLAIN, 17));
 		passwordText.setColumns(10);
 		passwordText.setBorder(null);

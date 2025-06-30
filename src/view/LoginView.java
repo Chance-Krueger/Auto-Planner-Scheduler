@@ -16,12 +16,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JPasswordField;
 
 public class LoginView {
 
 	private JFrame frame;
 	private JTextField labelEmailAddress;
-	private JTextField txtPassword;
+	private JPasswordField txtPassword;
 
 	// BUTTONS
 	private JButton loginButton;
@@ -115,13 +116,9 @@ public class LoginView {
 		frame.getContentPane().add(errorMessage);
 		errorMessage.setVisible(false);
 
-		txtPassword = new JTextField();
-		txtPassword.setToolTipText("");
-		txtPassword.setForeground(Color.DARK_GRAY);
-		txtPassword.setFont(new Font("PT Sans", Font.PLAIN, 13));
-		txtPassword.setColumns(10);
-		txtPassword.setBackground(Color.WHITE);
+		txtPassword = new JPasswordField();
 		txtPassword.setBounds(312, 325, 335, 42);
+		frame.getContentPane().add(txtPassword);
 		frame.getContentPane().add(txtPassword);
 
 		labelEmailAddress = new JTextField();

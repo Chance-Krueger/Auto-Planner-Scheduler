@@ -8,7 +8,10 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import javax.swing.JButton;
 import java.awt.Font;
+import java.lang.reflect.Field;
+
 import javax.swing.JTextPane;
+import javax.swing.JComboBox;
 
 public class SettingsView {
 
@@ -22,13 +25,17 @@ public class SettingsView {
 	private JButton accentColorButton;
 	private String acct;
 	private String[] sArray;
+	private JComboBox<String> themeColorDrop;
+	private JComboBox<String> accentColorDrop;
+	private String themeColor;
+	private String accentColor;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 
-		if (args.length > 0) {
+		if (args.length == 1) {
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					try {
@@ -39,6 +46,8 @@ public class SettingsView {
 					}
 				}
 			});
+		} else if (args.length > 1) {
+			// CALL OTHER CONSTRUCTOR
 		} else {
 
 			EventQueue.invokeLater(new Runnable() {
@@ -61,6 +70,17 @@ public class SettingsView {
 		this.acct = "thisUser@example.net";
 		sArray = new String[1];
 		sArray[0] = "";
+		this.themeColor = "DARK_GRAY";
+		this.accentColor = "LIGHT_GRAY";
+		initialize();
+	}
+
+	public SettingsView(String email, String theme, String accent) {
+		this.acct = email;
+		sArray = new String[1];
+		sArray[0] = email;
+		this.themeColor = theme;
+		this.accentColor = accent;
 		initialize();
 	}
 
@@ -68,11 +88,15 @@ public class SettingsView {
 		this.acct = email;
 		sArray = new String[1];
 		sArray[0] = email;
+		this.themeColor = "DARK_GRAY";
+		this.accentColor = "LIGHT_GRAY";
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
+	 * 
+	 * @wbp.parser.entryPoint
 	 */
 	private void initialize() {
 		frame = new JFrame();
@@ -81,6 +105,23 @@ public class SettingsView {
 		frame.setBounds(100, 100, 982, 576);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+
+		String[] colors = { "DARK_GRAY", "WHITE", "GRAY", "BLACK", "PINK", "YELLOW", "MAGENTA", "BLUE", "LIGHT_GRAY",
+				"RED", "ORANGE", "GREEN", "CYAN" };
+
+		String[] colorArray = makeColorArray(colors, this.themeColor);
+
+		themeColorDrop = new JComboBox<String>(colorArray);
+		themeColorDrop.setOpaque(true);
+		themeColorDrop.setBounds(643, 337, 99, 48);
+		frame.getContentPane().add(themeColorDrop);
+
+		colorArray = makeColorArray(colors, this.accentColor);
+
+		accentColorDrop = new JComboBox<String>(colorArray);
+		accentColorDrop.setOpaque(true);
+		accentColorDrop.setBounds(643, 394, 99, 48);
+		frame.getContentPane().add(accentColorDrop);
 
 		this.backArrowButton = new JButton("");
 		backArrowButton.setBorder(null);
@@ -112,23 +153,23 @@ public class SettingsView {
 		logOutButton.setBounds(257, 461, 104, 31);
 		frame.getContentPane().add(logOutButton);
 
-		this.themeColorButton = new JButton("Dark Grey");
-		themeColorButton.setOpaque(true);
-		themeColorButton.setBorder(null);
-		themeColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
-		themeColorButton.setForeground(Color.WHITE);
-		themeColorButton.setBackground(new Color(31, 110, 230));
-		themeColorButton.setBounds(652, 347, 75, 31);
-		frame.getContentPane().add(themeColorButton);
-
-		this.accentColorButton = new JButton("Light Grey");
-		accentColorButton.setBorder(null);
-		accentColorButton.setOpaque(true);
-		accentColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
-		accentColorButton.setForeground(Color.WHITE);
-		accentColorButton.setBackground(new Color(31, 110, 230));
-		accentColorButton.setBounds(652, 403, 80, 31);
-		frame.getContentPane().add(accentColorButton);
+//		this.themeColorButton = new JButton("Dark Grey");
+//		themeColorButton.setOpaque(true);
+//		themeColorButton.setBorder(null);
+//		themeColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
+//		themeColorButton.setForeground(Color.WHITE);
+//		themeColorButton.setBackground(new Color(31, 110, 230));
+//		themeColorButton.setBounds(652, 347, 75, 31);
+//		frame.getContentPane().add(themeColorButton);
+//
+//		this.accentColorButton = new JButton("Light Grey");
+//		accentColorButton.setBorder(null);
+//		accentColorButton.setOpaque(true);
+//		accentColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
+//		accentColorButton.setForeground(Color.WHITE);
+//		accentColorButton.setBackground(new Color(31, 110, 230));
+//		accentColorButton.setBounds(652, 403, 80, 31);
+//		frame.getContentPane().add(accentColorButton);
 
 		JLabel settingsBackgroundImage = new JLabel("New label");
 		settingsBackgroundImage.setOpaque(true);
@@ -142,9 +183,27 @@ public class SettingsView {
 		this.resetPasswordButton.addActionListener(e -> resetPassword());
 		this.blockOffDatesButton.addActionListener(e -> bod());
 		this.logOutButton.addActionListener(e -> logOut());
-		this.themeColorButton.addActionListener(e -> themeColor());
-		this.accentColorButton.addActionListener(e -> accentColor());
+		this.themeColorDrop.addActionListener(e -> themeColor());
+		this.accentColorDrop.addActionListener(e -> accentColor());
 		this.backArrowButton.addActionListener(e -> backArrow());
+	}
+
+	private String[] makeColorArray(String[] colors, String c) {
+
+		System.out.println("THE CURRENT COLOR IS: " + c.toString());
+
+		String[] colorArray = new String[13];
+
+		colorArray[0] = c.toString();
+		int n = 1;
+		for (int i = 0; i < colors.length; i++) {
+			if (!colors[i].equals(c.toString())) {
+				System.out.println(colors[i] + " " + colors[i].equals(c.toString()));
+				colorArray[n] = colors[i];
+				n++;
+			}
+		}
+		return colorArray;
 	}
 
 	private void backArrow() {
@@ -155,13 +214,32 @@ public class SettingsView {
 	}
 
 	private void accentColor() {
-		// TODO Auto-generated method stub
 
+		Color color = null;
+		try {
+			Field field = Color.class
+					.getField(this.accentColorDrop.getItemAt((this.accentColorDrop.getSelectedIndex()))); // Case-insensitive
+			color = (Color) field.get(null);
+			this.accentColor = this.accentColorDrop.getItemAt((this.accentColorDrop.getSelectedIndex()));
+		} catch (Exception e) {
+			// Handle the case where the color name is not found
+			System.err.println("Color was not Found.");
+			System.exit(0);
+		}
 	}
 
 	private void themeColor() {
-		// TODO Auto-generated method stub
 
+		Color color = null;
+		try {
+			Field field = Color.class.getField(this.themeColorDrop.getItemAt((this.themeColorDrop.getSelectedIndex()))); // Case-insensitive
+			color = (Color) field.get(null);
+			this.themeColor = this.themeColorDrop.getItemAt((this.themeColorDrop.getSelectedIndex()));
+		} catch (Exception e) {
+			// Handle the case where the color name is not found
+			System.err.println("Color was not Found.");
+			System.exit(0);
+		}
 	}
 
 	private void logOut() {

@@ -3,6 +3,7 @@ package model;
 import java.awt.Color;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -124,8 +125,8 @@ public class Settings {
 	 * @param day   an integer representing the day of the week
 	 * @param times a list of time intervals to block off for that day
 	 */
-	public void changeBlockedTimeOfDay(int day, ArrayList<Set<LocalTime>> times) {
-		this.bod.changeBlockedTimeOfDay(Repeat.dayOfWeek(day), new ArrayList<Set<LocalTime>>(times));
+	public void changeBlockedTimeOfDay(int day, Set<LocalTime> times) {
+		this.bod.changeBlockedTimeOfDay(Repeat.dayOfWeek(day), new HashSet<LocalTime>(times));
 	}
 
 	/**
@@ -135,7 +136,7 @@ public class Settings {
 	 * @param day   the {@code Repeat} constant for the desired day
 	 * @param times a list of time intervals to block off for that day
 	 */
-	public void changeBlockedTimeOfDay(Repeat day, ArrayList<Set<LocalTime>> times) {
-		this.bod.changeBlockedTimeOfDay(day, new ArrayList<Set<LocalTime>>(times));
+	public void changeBlockedTimeOfDay(Repeat day, Set<LocalTime> times) {
+		this.bod.changeBlockedTimeOfDay(day, new HashSet<LocalTime>(times));
 	}
 }
