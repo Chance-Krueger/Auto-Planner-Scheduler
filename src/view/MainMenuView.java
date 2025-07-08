@@ -152,7 +152,9 @@ public class MainMenuView {
 	}
 
 	private void calendar() {
-		// TODO Auto-generated method stub
+		this.frame.dispose();
+		CalendarView.main(this.acct);
+
 	}
 
 }
