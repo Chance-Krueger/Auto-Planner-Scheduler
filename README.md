@@ -7,11 +7,11 @@ The initial version will utilize a custom scheduling algorithm I am developing f
 The application will dynamically update your schedule in real time when changes or new tasks are added, using custom-built Java algorithms to ensure ongoing optimization based on user inputs.
 
 ### Planned Enhancements:
-- Integration of AI-based scheduling algorithms to fully optimize time management, adapt to user habits, and make intelligent decisions that enhance overall efficiency and productivity.
-
 - User account management using SQL, enabling multi-user support with securely stored data.
 
 - Personalized analytics and statistics, such as productivity trends, peak usage times, and time allocation summaries, to offer actionable insights for improved time management using SQL.
+
+- Integration of AI-based scheduling algorithms to fully optimize time management, adapt to user habits, and make intelligent decisions that enhance overall efficiency and productivity.
 
 - Front-end development using JavaScript, HTML, and CSS to transition the application toward a web-based or hybrid interface. This will allow for a richer user experience and showcase my commitment to learning full-stack development by combining multiple languages and technologies into one cohesive project.
 
