@@ -16,6 +16,7 @@ import model.AccountDataBase;
 import java.awt.Font;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
+import java.awt.Cursor;
 
 public class SignUpView {
 
@@ -104,6 +105,7 @@ public class SignUpView {
 		errorSecAnswer.setVisible(false);
 
 		backArrowButton = new JButton("");
+		backArrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backArrowButton.setBorder(null);
 		backArrowButton.setBounds(277, 48, 170, 50);
 		frame.getContentPane().add(backArrowButton);
@@ -121,6 +123,7 @@ public class SignUpView {
 		frame.getContentPane().add(SecurityQuestionLabel);
 
 		this.signupButton = new JButton("");
+		signupButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		signupButton.setBorder(null);
 		signupButton.setBounds(419, 467, 162, 50);
 		frame.getContentPane().add(signupButton);
@@ -150,6 +153,7 @@ public class SignUpView {
 				"What is the name of your first pet?", "What is the name of your first school?" };
 
 		this.secQuestionDropDown = new JComboBox<String>(secQ);
+		secQuestionDropDown.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		secQuestionDropDown.setAutoscrolls(true);
 		secQuestionDropDown.setBackground(Color.WHITE);
 		secQuestionDropDown.setOpaque(true);

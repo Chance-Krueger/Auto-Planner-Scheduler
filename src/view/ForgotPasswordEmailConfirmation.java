@@ -12,6 +12,7 @@ import model.AccountDataBase;
 
 import java.awt.Font;
 import javax.swing.JButton;
+import java.awt.Cursor;
 
 public class ForgotPasswordEmailConfirmation {
 
@@ -69,27 +70,29 @@ public class ForgotPasswordEmailConfirmation {
 		emailText.setColumns(10);
 
 		this.resetPasswordButton = new JButton("");
+		resetPasswordButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		resetPasswordButton.setBorder(null);
 		resetPasswordButton.setBounds(350, 405, 247, 59);
 		frame.getContentPane().add(resetPasswordButton);
+		
+				this.backArrowButton = new JButton("");
+				backArrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				backArrowButton.setBorder(null);
+				backArrowButton.setBounds(279, 58, 331, 59);
+				frame.getContentPane().add(backArrowButton);
+				this.backArrowButton.addActionListener(e -> backArrow());
 
 		JLabel backgroundImage = new JLabel("");
 		backgroundImage.setIcon(new ImageIcon(
 				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/ResetPasswordEmailImage.png"));
 		backgroundImage.setBounds(153, 0, 640, 548);
 		frame.getContentPane().add(backgroundImage);
-
-		this.backArrowButton = new JButton("");
-		backArrowButton.setBorder(null);
-		backArrowButton.setBounds(279, 58, 331, 59);
-		frame.getContentPane().add(backArrowButton);
 		frame.setBackground(Color.DARK_GRAY);
 		frame.setBounds(100, 100, 982, 576);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// ACTION LISTENERS
 		this.resetPasswordButton.addActionListener(e -> resetPassword());
-		this.backArrowButton.addActionListener(e -> backArrow());
 
 	}
 

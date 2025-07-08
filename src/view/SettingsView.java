@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 
 import javax.swing.JTextPane;
 import javax.swing.JComboBox;
+import java.awt.Cursor;
 
 public class SettingsView {
 
@@ -112,6 +113,7 @@ public class SettingsView {
 		String[] colorArray = makeColorArray(colors, this.themeColor);
 
 		themeColorDrop = new JComboBox<String>(colorArray);
+		themeColorDrop.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		themeColorDrop.setOpaque(true);
 		themeColorDrop.setBounds(643, 337, 99, 48);
 		frame.getContentPane().add(themeColorDrop);
@@ -119,11 +121,13 @@ public class SettingsView {
 		colorArray = makeColorArray(colors, this.accentColor);
 
 		accentColorDrop = new JComboBox<String>(colorArray);
+		accentColorDrop.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		accentColorDrop.setOpaque(true);
 		accentColorDrop.setBounds(643, 394, 99, 48);
 		frame.getContentPane().add(accentColorDrop);
 
 		this.backArrowButton = new JButton("");
+		backArrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backArrowButton.setBorder(null);
 		backArrowButton.setBounds(257, 57, 199, 48);
 		frame.getContentPane().add(backArrowButton);
@@ -139,16 +143,19 @@ public class SettingsView {
 		frame.getContentPane().add(accountUserText);
 
 		this.resetPasswordButton = new JButton("");
+		resetPasswordButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		resetPasswordButton.setBorder(null);
 		resetPasswordButton.setBounds(257, 234, 188, 31);
 		frame.getContentPane().add(resetPasswordButton);
 
 		this.blockOffDatesButton = new JButton("");
+		blockOffDatesButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		blockOffDatesButton.setBorder(null);
 		blockOffDatesButton.setBounds(267, 287, 475, 40);
 		frame.getContentPane().add(blockOffDatesButton);
 
 		this.logOutButton = new JButton("");
+		logOutButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		logOutButton.setBorder(null);
 		logOutButton.setBounds(257, 461, 104, 31);
 		frame.getContentPane().add(logOutButton);

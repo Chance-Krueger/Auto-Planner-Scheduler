@@ -12,6 +12,7 @@ import model.AccountDataBase;
 
 import java.awt.Color;
 import javax.swing.JButton;
+import java.awt.Cursor;
 
 public class MainMenuView {
 
@@ -84,26 +85,31 @@ public class MainMenuView {
 		frame.getContentPane().setLayout(null);
 
 		this.backButton = new JButton("");
+		backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backButton.setBorder(null);
 		backButton.setBounds(303, 67, 352, 36);
 		frame.getContentPane().add(backButton);
 
 		this.calendarButton = new JButton("");
+		calendarButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		calendarButton.setBorder(null);
 		calendarButton.setBounds(315, 253, 352, 29);
 		frame.getContentPane().add(calendarButton);
 
 		this.bodButton = new JButton("");
+		bodButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		bodButton.setBorder(null);
 		bodButton.setBounds(315, 311, 352, 29);
 		frame.getContentPane().add(bodButton);
 
 		this.statsButton = new JButton("");
+		statsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		statsButton.setBorder(null);
 		statsButton.setBounds(315, 367, 352, 29);
 		frame.getContentPane().add(statsButton);
 
 		this.settingsButton = new JButton("");
+		settingsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		settingsButton.setBorder(null);
 		settingsButton.setBounds(315, 420, 352, 29);
 		frame.getContentPane().add(settingsButton);

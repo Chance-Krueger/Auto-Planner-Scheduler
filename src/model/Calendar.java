@@ -368,41 +368,38 @@ public class Calendar {
 
 	/**
 	 * Adjusts the block-off times for a specific day of the week in the user's
-	 * calendar settings. Each element in {@code times} represents a start/end time
-	 * pair (as a {@code Set<String>} of size 2), and multiple time ranges can be
-	 * provided. The method verifies input validity, converts the strings to
-	 * {@code LocalTime} objects, and updates the corresponding blocked times.
+	 * calendar settings. Each element in {@code times} represents a single time
+	 * string (in {@code HH:mm} format) to be blocked off. The method validates the
+	 * input, converts the strings to {@code LocalTime} objects, and updates the
+	 * corresponding blocked times for the specified day.
 	 *
 	 * <p>
 	 * Key validation includes:
 	 * <ul>
-	 * <li>{@code times} must be empty or contain an even number of entries.</li>
-	 * <li>Each {@code Set<String>} must contain exactly 2 valid time strings in
-	 * {@code HH:mm} format.</li>
-	 * <li>If the times are not in chronological order, they are reordered
-	 * automatically.</li>
+	 * <li>{@code day} must be a valid day recognized by
+	 * {@code Repeat.checkRepeatFromString()}.</li>
+	 * <li>{@code times} must not be {@code null}; it can be empty, in which case
+	 * the day remains unmodified.</li>
+	 * <li>Each string in {@code times} must represent a valid time in {@code HH:mm}
+	 * format.</li>
 	 * </ul>
 	 *
 	 * @param day   the name of the day of the week (e.g., "Monday", "Friday"); must
 	 *              be recognized by {@code Repeat.checkRepeatFromString()}
-	 * @param times an {@code ArrayList} of {@code Set<String>} where each set
-	 *              contains exactly two time strings representing a time block
+	 * @param times a {@code Set<String>} where each string represents a time to
+	 *              block off
 	 * @return {@code true} if the block-off times were successfully validated and
-	 *         updated; {@code false} if input is malformed or validation fails
+	 *         updated; {@code false} if the day is invalid
 	 * @throws NullPointerException   if {@code day} or {@code times} is
 	 *                                {@code null}
 	 * @throws DateTimeParseException if any time string cannot be parsed as a
 	 *                                {@code LocalTime}
 	 */
-	public boolean adjustBlockOffDates(String day, ArrayList<Set<String>> times) {
+	public boolean adjustBlockOffDates(String day, Set<String> times) {
 
 		// List has nothing in it
 		if (times.size() <= 0)
 			return true;
-
-		// List is not Even and can't have start/end times
-		if (times.size() % 2 != 0)
-			return false;
 
 		BlockOffDates bod = new BlockOffDates(this.settings.getBod());
 
@@ -411,41 +408,19 @@ public class Calendar {
 		if (r == null)
 			return false;
 
-		ArrayList<Set<LocalTime>> newList = new ArrayList<Set<LocalTime>>();
+		Set<LocalTime> set = new HashSet<LocalTime>();
 
 		// DO CHECK TO SEE IF TIMES IS LEGAL
-		for (Set<String> s : times) {
+		for (String s : times) {
 
-			// Current Set is not legal (has to be 2, start/end times)
-			if (s.size() != 2)
-				return false;
+			LocalTime l1 = LocalTime.parse(s);
 
-			String[] timesArray = null;
-			try {
-				timesArray = s.toArray(new String[0]);
-			} catch (Exception e) {
-				// Was not a String (Should never hit since the parameter is String)
-				return false;
-			}
-
-			LocalTime l1 = LocalTime.parse(timesArray[0]);
-			LocalTime l2 = LocalTime.parse(timesArray[1]);
-
-			// THE TIMES ARE NOT IN ORDER
-			if (l1.isAfter(l2)) {
-				l1 = LocalTime.parse(timesArray[1]);
-				l2 = LocalTime.parse(timesArray[0]);
-			}
-
-			Set<LocalTime> set = new HashSet<LocalTime>();
 			set.add(l1);
-			set.add(l2);
-			// CONVERT EACH STRING OF TIMES TO LocalTime
-			newList.add(set);
 		}
 
-		// PUT NEW ARRAYLIST INTO HASHMAP
-		bod.changeBlockedTimeOfDay(r, newList);
+		// PUT NEW SET INTO HASHMAP
+		bod.changeBlockedTimeOfDay(r, set);
+		this.settings.setBod(bod);
 		return true;
 	}
 

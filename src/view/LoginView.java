@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
+import java.awt.Cursor;
 
 public class LoginView {
 
@@ -130,16 +131,19 @@ public class LoginView {
 		labelEmailAddress.setColumns(10);
 
 		this.loginButton = new JButton("");
+		loginButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		loginButton.setBorder(null);
 		loginButton.setBounds(265, 379, 382, 51);
 		frame.getContentPane().add(loginButton);
 
 		this.signupButton = new JButton("");
+		signupButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		signupButton.setBorder(null);
 		signupButton.setBounds(394, 470, 133, 29);
 		frame.getContentPane().add(signupButton);
 
 		this.forgotButton = new JButton("");
+		forgotButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		forgotButton.setBorder(null);
 		forgotButton.setBounds(379, 434, 155, 35);
 		frame.getContentPane().add(forgotButton);

@@ -19,6 +19,7 @@ import model.Repeat;
 
 import java.awt.ScrollPane;
 import java.awt.Font;
+import java.awt.Cursor;
 
 public class BlockOffDatesView {
 
@@ -108,16 +109,19 @@ public class BlockOffDatesView {
 		frame.getContentPane().setLayout(null);
 
 		this.cancelButton = new JButton("");
+		cancelButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		cancelButton.setBorder(null);
 		cancelButton.setBounds(386, 462, 91, 29);
 		frame.getContentPane().add(cancelButton);
 
 		this.confirmButton = new JButton("");
+		confirmButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		confirmButton.setBorder(null);
 		confirmButton.setBounds(501, 450, 188, 58);
 		frame.getContentPane().add(confirmButton);
 
 		this.backButton = new JButton("");
+		backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backButton.setBorder(null);
 		backButton.setBounds(290, 45, 301, 46);
 		frame.getContentPane().add(backButton);

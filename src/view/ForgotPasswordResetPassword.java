@@ -13,6 +13,7 @@ import javax.swing.JTextField;
 import java.awt.Font;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
+import java.awt.Cursor;
 
 public class ForgotPasswordResetPassword {
 
@@ -141,6 +142,7 @@ public class ForgotPasswordResetPassword {
 		frame.getContentPane().add(securityQuestionText);
 
 		this.backButton = new JButton("");
+		backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backButton.setBorder(null);
 		backButton.setBounds(309, 55, 314, 49);
 		frame.getContentPane().add(backButton);
@@ -160,6 +162,7 @@ public class ForgotPasswordResetPassword {
 		frame.getContentPane().add(newPasswordText);
 
 		this.resetPasswordButton = new JButton("");
+		resetPasswordButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		resetPasswordButton.setBorder(null);
 		resetPasswordButton.setBounds(389, 466, 216, 49);
 		frame.getContentPane().add(resetPasswordButton);
