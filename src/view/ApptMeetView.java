@@ -10,8 +10,12 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 
+import model.MeetingAppt;
+
 import java.awt.Font;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -205,7 +209,31 @@ public class ApptMeetView {
 	}
 
 	private void addEvent() {
-		// TODO Auto-generated method stub
+
+		// title the title of the meeting
+		// date the LocalDateTime representing the date of the meeting
+		// startTime the LocalTime when the meeting starts
+		// endTime the LocalTime when the meeting ends
+
+		System.out.println(this.startSpinner.getValue().toString());
+		System.out.println(this.endSpinner.toString());
+
+		String first = this.startSpinner.getValue().toString();
+		first = first.substring(11, 16);
+		LocalTime start = LocalTime.parse(first);
+
+		String second = this.endSpinner.getValue().toString();
+		second = second.substring(11, 16);
+		LocalTime end = LocalTime.parse(second);
+
+		// Check to see if start and end are legal (start is first and end is second
+		// with time)
+		if (start.compareTo(end) >= 0) {
+			// THROW MESSAGE TO USER AND MAKE THEM REDO IT AGAIN
+		}
+
+		MeetingAppt maEvent = new MeetingAppt(this.titleText.getText(), this.dateOfEvent, start, end);
+		// ADD EVENT TO USERS HASHMAP AND PUT INTO THEIR DATA
 	}
 
 	private void createEventView() {

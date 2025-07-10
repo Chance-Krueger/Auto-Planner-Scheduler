@@ -1,6 +1,7 @@
 package model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
@@ -18,7 +19,7 @@ import java.time.LocalTime;
  * <p>
  * <b>Instance Variables:</b>
  * <ul>
- * <li>{@code date} — The {@code LocalDateTime} representing the day and general
+ * <li>{@code date} — The {@code LocalDate} representing the day and general
  * time of the appointment</li>
  * <li>{@code startTime} — The {@code LocalTime} when the appointment
  * begins</li>
@@ -41,7 +42,7 @@ public class MeetingAppt extends Event {
 
 //	Meeting/Appointment(When, start/end times), ..., extends: Event
 
-	private LocalDateTime date;
+	private LocalDate date;
 	private LocalTime startTime;
 	private LocalTime endTime;
 
@@ -50,12 +51,12 @@ public class MeetingAppt extends Event {
 	 * and end time.
 	 *
 	 * @param title     the title of the meeting
-	 * @param date      the {@code LocalDateTime} representing the date of the
+	 * @param date      the {@code LocalDate} representing the date of the
 	 *                  meeting
 	 * @param startTime the {@code LocalTime} when the meeting starts
 	 * @param endTime   the {@code LocalTime} when the meeting ends
 	 */
-	public MeetingAppt(String title, LocalDateTime date, LocalTime startTime, LocalTime endTime) {
+	public MeetingAppt(String title, LocalDate date, LocalTime startTime, LocalTime endTime) {
 		super(title);
 		this.date = date;
 		this.startTime = startTime;
@@ -82,9 +83,9 @@ public class MeetingAppt extends Event {
 	/**
 	 * Returns the full date and time of the meeting.
 	 *
-	 * @return the {@code LocalDateTime} of the meeting
+	 * @return the {@code LocalDate} of the meeting
 	 */
-	public LocalDateTime getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
 
@@ -92,9 +93,9 @@ public class MeetingAppt extends Event {
 	/**
 	 * Sets the full date and time of the meeting.
 	 *
-	 * @param date the {@code LocalDateTime} to assign
+	 * @param date the {@code LocalDate} to assign
 	 */
-	public void setDate(LocalDateTime date) {
+	public void setDate(LocalDate date) {
 		this.date = date;
 	}
 
