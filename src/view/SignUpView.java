@@ -12,6 +12,8 @@ import javax.swing.JTextField;
 import model.Account;
 import model.Account.Question;
 import model.AccountDataBase;
+import model.DataBase;
+import model.Settings;
 
 import java.awt.Font;
 import javax.swing.JComboBox;
@@ -29,7 +31,6 @@ public class SignUpView {
 	private JComboBox<String> secQuestionDropDown;
 
 	// CLASSES
-	private AccountDataBase adb;
 	private JLabel lblNewLabel;
 	private JButton backArrowButton;
 	private JLabel errorMessageEmail;
@@ -191,7 +192,7 @@ public class SignUpView {
 		this.errorMessageSecurity.setVisible(false);
 		this.errorMessageEmail.setVisible(false);
 
-		this.adb = new AccountDataBase();
+		AccountDataBase adb = new AccountDataBase();
 
 		String email = this.emailText.getText();
 		String password = this.passwordText.getText();
@@ -223,9 +224,9 @@ public class SignUpView {
 		}
 
 		// NOT IN DATA BASE YET
-		if (adb.verifyUniqueUsername(email)) {
+		if (DataBase.verifyUser(email, password) == null) {
 			Account account = new Account(email, password, secAnswer, Question.fromInt(question));
-			this.adb.addUser(account);
+			DataBase.addUser(account, new Settings());
 			this.frame.dispose();
 			LoginView.main(null);
 		} else {

@@ -9,6 +9,7 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
 import model.AccountDataBase;
+import model.DataBase;
 
 import javax.swing.JTextField;
 import java.awt.Font;
@@ -36,7 +37,6 @@ public class LoginView {
 	private boolean isError;
 
 	// CLASSES
-	private AccountDataBase adb;
 	private JLabel errorMessage;
 
 	/**
@@ -60,7 +60,6 @@ public class LoginView {
 	 */
 	public LoginView() {
 		isError = false;
-		adb = new AccountDataBase();
 		initialize();
 	}
 
@@ -74,7 +73,8 @@ public class LoginView {
 
 		String[] sArray = { email, password };
 
-		if (!this.adb.authenticate(email, password)) {
+		if (DataBase.verifyUser(email, password) == null) {
+			System.out.println(AccountDataBase.hashPassword(password, AccountDataBase.generateSalt()));
 			incorrectLogin();
 		} else {
 			this.frame.dispose();
