@@ -9,6 +9,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JTextField;
 
 import model.AccountDataBase;
+import model.DataBase;
 
 import java.awt.Font;
 import javax.swing.JButton;
@@ -20,7 +21,6 @@ public class ForgotPasswordEmailConfirmation {
 	private JTextField emailText;
 	private JButton resetPasswordButton;
 	private JButton backArrowButton;
-	private AccountDataBase adb;
 	private JLabel errorEmail;
 
 	/**
@@ -43,7 +43,6 @@ public class ForgotPasswordEmailConfirmation {
 	 * Create the application.
 	 */
 	public ForgotPasswordEmailConfirmation() {
-		this.adb = new AccountDataBase();
 		initialize();
 	}
 
@@ -74,13 +73,13 @@ public class ForgotPasswordEmailConfirmation {
 		resetPasswordButton.setBorder(null);
 		resetPasswordButton.setBounds(350, 405, 247, 59);
 		frame.getContentPane().add(resetPasswordButton);
-		
-				this.backArrowButton = new JButton("");
-				backArrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-				backArrowButton.setBorder(null);
-				backArrowButton.setBounds(279, 58, 331, 59);
-				frame.getContentPane().add(backArrowButton);
-				this.backArrowButton.addActionListener(e -> backArrow());
+
+		this.backArrowButton = new JButton("");
+		backArrowButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		backArrowButton.setBorder(null);
+		backArrowButton.setBounds(279, 58, 331, 59);
+		frame.getContentPane().add(backArrowButton);
+		this.backArrowButton.addActionListener(e -> backArrow());
 
 		JLabel backgroundImage = new JLabel("");
 		backgroundImage.setIcon(new ImageIcon(
@@ -97,7 +96,6 @@ public class ForgotPasswordEmailConfirmation {
 	}
 
 	private void backArrow() {
-		// TODO Auto-generated method stub
 		this.frame.dispose();
 		LoginView.main(null);
 	}
@@ -109,10 +107,11 @@ public class ForgotPasswordEmailConfirmation {
 		String email = this.emailText.getText();
 
 		// CHECK TO SEE IF EMAIL IS IN DATABASE
-		if (!this.adb.verifyUniqueUsername(email)) {
+		if (DataBase.verifyUser(email)) {
 			this.frame.dispose();
 			String[] sArray = { email };
 			ForgotPasswordResetPassword.main(sArray);
+
 		} else {
 			// ELSE GIVE ERROR MESSAGE ONTO SCREEN
 			errorEmail.setVisible(true);

@@ -6,6 +6,8 @@ import javax.swing.JFrame;
 
 import model.Account;
 import model.AccountDataBase;
+import model.DataBase;
+
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import java.awt.Color;
@@ -20,7 +22,7 @@ public class ForgotPasswordResetPassword {
 	private JFrame frame;
 
 	// CLASSES
-	private AccountDataBase adb;
+//	private AccountDataBase adb;
 	private Account acct;
 	private JTextField answerText;
 	private JTextField newPasswordText;
@@ -65,17 +67,15 @@ public class ForgotPasswordResetPassword {
 	 * Create the application.
 	 */
 	public ForgotPasswordResetPassword() {
-		this.adb = new AccountDataBase();
+//		this.adb = new AccountDataBase();
 		this.acct = null;
 		this.question = "THIS IS FOR TESTING.";
 		initialize();
 	}
 
 	public ForgotPasswordResetPassword(String email) {
-		this.adb = new AccountDataBase();
-		try {
-			this.acct = this.adb.getUser(email);
-		} catch (Exception e) {
+		this.acct = DataBase.getUser(email);
+		if (this.acct == null) {
 			System.err.println("User Does not Exist in DataBase.");
 		}
 
@@ -192,15 +192,14 @@ public class ForgotPasswordResetPassword {
 		}
 
 		// 2nd check to see if new password is secure
-		if (!this.adb.verifyStrongPassword(this.newPasswordText.getText())) {
+		if (!AccountDataBase.verifyStrongPassword(this.newPasswordText.getText())) {
 			System.err.println("Password is not Secure Enough.");
 			errorPassword.setVisible(true);
 			return;
 		}
 
 		this.acct.changePassword(this.newPasswordText.getText());
-		this.adb.updateUser(this.acct.getUsername(), acct);
-		this.adb.saveUsers();
+		DataBase.adjustPassword(this.acct.getUsername(), this.newPasswordText.getText());
 		this.frame.dispose();
 		LoginView.main(null);
 	}

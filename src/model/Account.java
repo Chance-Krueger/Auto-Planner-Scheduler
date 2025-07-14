@@ -93,6 +93,16 @@ public class Account {
 			}
 			throw new IllegalArgumentException("Invalid Question number: " + num);
 		}
+
+		public static Question fromStringText(String num) {
+			for (Question q : Question.values()) {
+				if (q.toString().equals(num)) {
+					return q;
+				}
+
+			}
+			throw new IllegalArgumentException("Invalid Question number: " + num);
+		}
 	}
 
 	private String acctName;

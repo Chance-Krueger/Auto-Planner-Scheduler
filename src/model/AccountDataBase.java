@@ -116,7 +116,7 @@ public class AccountDataBase {
 	 * @param plainTextPassword the password to test
 	 * @return {@code true} if the password meets all criteria
 	 */
-	public boolean verifyStrongPassword(String plainTextPassword) {
+	public static boolean verifyStrongPassword(String plainTextPassword) {
 		boolean length = plainTextPassword.length() >= 8;
 		boolean hasNumber = plainTextPassword.matches(".*[0-9].*");
 		boolean hasSpecial = plainTextPassword.matches(".*[!@#$%^&*(),.?\":{}|<>].*");

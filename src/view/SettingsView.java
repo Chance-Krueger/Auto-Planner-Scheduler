@@ -9,8 +9,14 @@ import java.awt.Color;
 import javax.swing.JButton;
 import java.awt.Font;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JTextPane;
+
+import model.Account;
+import model.DataBase;
+
 import javax.swing.JComboBox;
 import java.awt.Cursor;
 
@@ -22,14 +28,31 @@ public class SettingsView {
 	private JButton resetPasswordButton;
 	private JButton blockOffDatesButton;
 	private JButton logOutButton;
-	private JButton themeColorButton;
-	private JButton accentColorButton;
 	private String acct;
 	private String[] sArray;
 	private JComboBox<String> themeColorDrop;
 	private JComboBox<String> accentColorDrop;
 	private String themeColor;
 	private String accentColor;
+
+	private static final Map<String, String> colorMap = new HashMap<>();
+
+	static {
+		colorMap.put(Color.BLACK.toString(), "BLACK");
+		colorMap.put(Color.BLUE.toString(), "BLUE");
+		colorMap.put(Color.CYAN.toString(), "CYAN");
+		colorMap.put(Color.DARK_GRAY.toString(), "DARK_GRAY");
+		colorMap.put(Color.GRAY.toString(), "GRAY");
+		colorMap.put(Color.GREEN.toString(), "GREEN");
+		colorMap.put(Color.LIGHT_GRAY.toString(), "LIGHT_GRAY");
+		colorMap.put(Color.MAGENTA.toString(), "MAGENTA");
+		colorMap.put(Color.ORANGE.toString(), "ORANGE");
+		colorMap.put(Color.PINK.toString(), "PINK");
+		colorMap.put(Color.RED.toString(), "RED");
+		colorMap.put(Color.WHITE.toString(), "WHITE");
+		colorMap.put(Color.YELLOW.toString(), "YELLOW");
+
+	}
 
 	/**
 	 * Launch the application.
@@ -76,22 +99,29 @@ public class SettingsView {
 		initialize();
 	}
 
-	public SettingsView(String email, String theme, String accent) {
+	public SettingsView(String email) {
 		this.acct = email;
+
+		Account a = DataBase.getUser(email);
+
+		Color tc = DataBase.getThemeColor(email);
+		Color ac = DataBase.getAccentColor(email);
+
 		sArray = new String[1];
 		sArray[0] = email;
-		this.themeColor = theme;
-		this.accentColor = accent;
+		this.themeColor = colorMap.getOrDefault(tc.toString(), tc.toString());
+		this.accentColor = colorMap.getOrDefault(ac.toString(), ac.toString());
 		initialize();
 	}
 
-	public SettingsView(String email) {
-		this.acct = email;
-		sArray = new String[1];
-		sArray[0] = email;
-		this.themeColor = "DARK_GRAY";
-		this.accentColor = "LIGHT_GRAY";
-		initialize();
+	public static String getColorName(Color c) {
+		for (Map.Entry<String, String> entry : colorMap.entrySet()) {
+			if (entry.getValue().equals(c.toString())) {
+				return entry.getKey();
+			}
+		}
+		// If not found, return the RGB representation
+		return String.format("rgb(%d,%d,%d)", c.getRed(), c.getGreen(), c.getBlue());
 	}
 
 	/**
@@ -160,24 +190,6 @@ public class SettingsView {
 		logOutButton.setBounds(257, 461, 104, 31);
 		frame.getContentPane().add(logOutButton);
 
-//		this.themeColorButton = new JButton("Dark Grey");
-//		themeColorButton.setOpaque(true);
-//		themeColorButton.setBorder(null);
-//		themeColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
-//		themeColorButton.setForeground(Color.WHITE);
-//		themeColorButton.setBackground(new Color(31, 110, 230));
-//		themeColorButton.setBounds(652, 347, 75, 31);
-//		frame.getContentPane().add(themeColorButton);
-//
-//		this.accentColorButton = new JButton("Light Grey");
-//		accentColorButton.setBorder(null);
-//		accentColorButton.setOpaque(true);
-//		accentColorButton.setFont(new Font("PT Sans Caption", Font.BOLD, 16));
-//		accentColorButton.setForeground(Color.WHITE);
-//		accentColorButton.setBackground(new Color(31, 110, 230));
-//		accentColorButton.setBounds(652, 403, 80, 31);
-//		frame.getContentPane().add(accentColorButton);
-
 		JLabel settingsBackgroundImage = new JLabel("New label");
 		settingsBackgroundImage.setOpaque(true);
 		settingsBackgroundImage.setBackground(new Color(63, 63, 63));
@@ -197,15 +209,12 @@ public class SettingsView {
 
 	private String[] makeColorArray(String[] colors, String c) {
 
-		System.out.println("THE CURRENT COLOR IS: " + c.toString());
-
 		String[] colorArray = new String[13];
 
 		colorArray[0] = c.toString();
 		int n = 1;
 		for (int i = 0; i < colors.length; i++) {
 			if (!colors[i].equals(c.toString())) {
-				System.out.println(colors[i] + " " + colors[i].equals(c.toString()));
 				colorArray[n] = colors[i];
 				n++;
 			}
@@ -222,29 +231,26 @@ public class SettingsView {
 
 	private void accentColor() {
 
-		Color color = null;
-		try {
-			Field field = Color.class
-					.getField(this.accentColorDrop.getItemAt((this.accentColorDrop.getSelectedIndex()))); // Case-insensitive
-			color = (Color) field.get(null);
-			this.accentColor = this.accentColorDrop.getItemAt((this.accentColorDrop.getSelectedIndex()));
-		} catch (Exception e) {
-			// Handle the case where the color name is not found
-			System.err.println("Color was not Found.");
+		String selected = this.accentColorDrop.getItemAt(this.accentColorDrop.getSelectedIndex());
+
+		if (colorMap.containsValue(selected)) {
+			this.accentColor = selected;
+			// You can use 'color' if needed further
+		} else {
+			System.err.println("Color was not found in map: " + selected);
 			System.exit(0);
 		}
 	}
 
 	private void themeColor() {
 
-		Color color = null;
-		try {
-			Field field = Color.class.getField(this.themeColorDrop.getItemAt((this.themeColorDrop.getSelectedIndex()))); // Case-insensitive
-			color = (Color) field.get(null);
-			this.themeColor = this.themeColorDrop.getItemAt((this.themeColorDrop.getSelectedIndex()));
-		} catch (Exception e) {
-			// Handle the case where the color name is not found
-			System.err.println("Color was not Found.");
+		String selected = this.themeColorDrop.getItemAt(this.themeColorDrop.getSelectedIndex());
+
+		if (colorMap.containsValue(selected)) {
+			this.themeColor = selected;
+			// You can use 'color' if needed further
+		} else {
+			System.err.println("Color was not found in map: " + selected);
 			System.exit(0);
 		}
 	}
@@ -253,19 +259,46 @@ public class SettingsView {
 
 		// ADD CONFIRMATION TO LOGOUT
 		this.frame.dispose();
+		changeColor();
 		LoginView.main(sArray);
 
+	}
+
+	private void changeColor() {
+
+		String theme = "";
+		String accent = "";
+
+		for (Map.Entry<String, String> entry : colorMap.entrySet()) {
+			if (entry.getValue().equals(this.themeColor)) {
+				theme = entry.getKey();
+			} else if (entry.getValue().equals(this.accentColor)) {
+				accent = entry.getKey();
+
+			}
+		}
+
+		if (theme != "" && accent != "") {
+			if (DataBase.adjustColors(this.acct, theme, accent)) {
+			} else {
+				System.err.println("Colors weren't changed.");
+			}
+		} else {
+			System.err.println("Value not found in the map.");
+		}
 	}
 
 	private void bod() {
 		this.frame.dispose();
 		String[] newArray = { sArray[0], "SettingsView" };
+		changeColor();
 		BlockOffDatesView.main(newArray);
 
 	}
 
 	private void resetPassword() {
 		this.frame.dispose();
+		changeColor();
 		ForgotPasswordResetPassword.main(sArray);
 
 	}
