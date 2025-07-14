@@ -1,6 +1,6 @@
 # Automatic-Planner-Scheduler
 ## Description
-This is a future Java-based GUI application designed to function as both a calendar and an intelligent scheduler. Its purpose is to automatically allocate time for tasks and events you input, helping you manage your schedule efficiently and stay organized.
+This is a Java-based GUI application designed to function as both a calendar and an intelligent scheduler. Its purpose is to automatically allocate time for tasks and events you input, helping you manage your schedule efficiently and stay organized.
 
 The initial version will utilize a custom scheduling algorithm I am developing from scratch in Java. This allows me to gain hands-on experience with algorithm design and time management logic. In future iterations, I plan to integrate AI-driven decision-making to further improve scheduling efficiency and adaptability, giving me practical experience working with artificial intelligence in real-world applications.
 
