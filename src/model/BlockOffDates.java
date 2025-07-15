@@ -35,6 +35,6 @@ public class BlockOffDates {
 	}
 
 	public Map<Repeat, Set<LocalTime>> getBlockedDates() {
-		return Collections.unmodifiableMap(this.blockedDates);
+		return this.blockedDates;
 	}
 }

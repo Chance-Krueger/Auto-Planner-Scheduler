@@ -27,8 +27,8 @@ package model;
  */
 public enum Repeat {
 
-	MON(0, "Monday"), TUE(1, "Tuesday"), WED(2, "Wednesday"), THR(3, "Thursday"), FRI(4, "Friday"), SAT(5, "Saturday"),
-	SUN(6, "Sunday"),
+	MON(1, "Monday"), TUE(2, "Tuesday"), WED(3, "Wednesday"), THR(4, "Thursday"), FRI(5, "Friday"), SAT(6, "Saturday"),
+	SUN(0, "Sunday"),
 
 	NONE(-1, "None"), EVERYDAY(-1, "Everyday"), EVERYWEEK(-1, "Every Week"), EVERY2WEEKS(-1, "Every 2 Weeks"),
 	EVERYMONTH(-1, "Every Month"), EVERYYEAR(-1, "Every Year"), CUSTOM(-1, "Custom");

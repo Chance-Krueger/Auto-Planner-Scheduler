@@ -15,7 +15,9 @@ import javax.swing.JButton;
 import javax.swing.JTable;
 
 import model.BlockOffDates;
+import model.DataBase;
 import model.Repeat;
+import model.Settings;
 
 import java.awt.ScrollPane;
 import java.awt.Font;
@@ -29,8 +31,8 @@ public class BlockOffDatesView {
 	private JButton cancelButton;
 	private JButton confirmButton;
 	private JButton backButton;
-	private JTable table_1;
 	private BlockOffDates bod;
+	private JTable table;
 
 	/**
 	 * Launch the application.
@@ -84,14 +86,7 @@ public class BlockOffDatesView {
 	public BlockOffDatesView(String email, String cameFrom) {
 		this.cameFrom = cameFrom;
 		this.email = email;
-		this.bod = new BlockOffDates();
-		initialize();
-	}
-
-	public BlockOffDatesView(String email, String cameFrom, BlockOffDates bod) {
-		this.cameFrom = cameFrom;
-		this.email = email;
-		this.bod = bod;
+		this.bod = DataBase.getSettings(email).getBod();
 		initialize();
 	}
 
@@ -107,6 +102,11 @@ public class BlockOffDatesView {
 		frame.setBounds(100, 100, 982, 576);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+
+		JLabel instructionsText = new JLabel("Check mark the times you don't want to Work.");
+		instructionsText.setFont(new Font("PT Sans", Font.PLAIN, 13));
+		instructionsText.setBounds(344, 86, 291, 16);
+		frame.getContentPane().add(instructionsText);
 
 		this.cancelButton = new JButton("");
 		cancelButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -126,7 +126,7 @@ public class BlockOffDatesView {
 		backButton.setBounds(290, 45, 301, 46);
 		frame.getContentPane().add(backButton);
 
-		JTable table = makeTable();
+		table = makeTable();
 		table.setFont(new Font("PT Sans", Font.PLAIN, 15));
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		table.setRowHeight(40);
@@ -227,12 +227,42 @@ public class BlockOffDatesView {
 	}
 
 	private void confrim() {
-		// TODO Auto-generated method stub
+		JTable table = this.table; // reference to table
+		String[] timeSlots = generateTimeSlots(); // same as used to build the table
+		BlockOffDates updatedBOD = new BlockOffDates();
 
+		for (int row = 0; row < table.getRowCount(); row++) {
+			Repeat day = Repeat.dayOfWeek(row);
+			Set<LocalTime> blockedTimes = new HashSet<>();
+
+			for (int col = 1; col < table.getColumnCount(); col++) { // skip "Day" label at column 0
+				Boolean isBlocked = (Boolean) table.getValueAt(row, col);
+				if (isBlocked != null && isBlocked) {
+					blockedTimes.add(LocalTime.parse(timeSlots[col - 1]));
+				}
+			}
+
+			updatedBOD.changeBlockedTimeOfDay(day, blockedTimes);
+		}
+
+		// Update in database
+		Settings set = new Settings();
+		set.setBod(updatedBOD); // if your Settings class supports this
+		boolean success = DataBase.adjustBOD(email, set);
+
+		if (success) {
+			System.out.println("Blocked-off dates successfully updated.");
+			frame.dispose();
+			backArrow();
+			// Optionally go back to main or settings view
+		} else {
+			System.out.println("Failed to update blocked-off dates.");
+		}
 	}
 
 	private void cancel() {
-		// TODO Auto-generated method stub
+		// TODO Make pop-up window to see if user wants to leave or cancel update
+		backArrow();
 
 	}
 }

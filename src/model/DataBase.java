@@ -5,21 +5,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
+import java.sql.Statement;
+import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import model.Account.Question;
 
 public class DataBase {
 
-	public static void main(String[] args) {
-		DataBase db = new DataBase();
-		Account acct = new Account("chancekrueger@arizona.edu", "Freeman46!", "Freeman", Question.THREE);
-		Settings set = new Settings();
-		DataBase.addUser(acct, set);
-	}
-
-	private static HashMap<Account, Calendar> data;
+//	private static HashMap<Account, Calendar> data;
 
 	public DataBase() {
 		makeConnection();
@@ -50,11 +46,10 @@ public class DataBase {
 	}
 
 	private static void populateData() {
-		data = null;
+//		data = null;
 	}
 
 	public static boolean addUser(Account acct, Settings set) {
-
 		String email = acct.getUsername();
 		String password = acct.getHashedPassword();
 		String security_question = acct.getQuestion().toString();
@@ -81,17 +76,58 @@ public class DataBase {
 			int rowsAffected = ps.executeUpdate();
 
 			if (rowsAffected > 0) {
-				System.out.println("User added successfully.");
-				populateData();
-				return true;
-			} else {
-				System.out.println("User insertion failed.");
-				return false;
+				// Grab the newly inserted user_id
+				Statement idQuery = con.createStatement();
+				ResultSet rs = idQuery.executeQuery("SELECT LAST_INSERT_ID()");
+				if (rs.next()) {
+					int userId = rs.getInt(1);
+					addUserToBOD(userId); // Initialize blocked-off dates
+					populateData();
+					System.out.println("User added successfully. User ID: " + userId);
+					return true;
+				}
 			}
+
+			System.out.println("User insertion failed.");
+			return false;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
+		}
+	}
+
+	private static void addUserToBOD(int userID) {
+		Connection con = makeConnection();
+
+		try {
+			// Generate a space-separated string of all 15-minute intervals in 24 hours
+			StringBuilder allTimes = new StringBuilder();
+			LocalTime cur = LocalTime.MIDNIGHT;
+			for (int i = 0; i < 96; i++) { // 24 hrs * 4 (quarter-hour increments)
+				allTimes.append(cur.toString()).append(" ");
+				cur = cur.plusMinutes(15);
+			}
+			String times = allTimes.toString().trim();
+
+			String query = "INSERT INTO blocked_off_dates (user_id, sunday, monday, tuesday, wednesday, thursday, friday, saturday) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setInt(1, userID);
+
+			// Fill all weekdays with the full timestring
+			for (int i = 2; i <= 8; i++) {
+				ps.setString(i, times);
+			}
+
+			int rowsInserted = ps.executeUpdate();
+			if (rowsInserted > 0) {
+				System.out.println("Blocked-off dates initialized with full schedule for user " + userID);
+			} else {
+				System.out.println("Failed to initialize blocked-off dates.");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -117,10 +153,6 @@ public class DataBase {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	public static boolean adjustBOD(String email, Settings set) {
-		return false;
 	}
 
 	public static boolean adjustPassword(String email, String newPassword) {
@@ -375,6 +407,110 @@ public class DataBase {
 			e.printStackTrace();
 			// Optional fallback
 			return Color.BLACK;
+		}
+	}
+
+	public static Settings getSettings(String email) {
+
+		Connection con = makeConnection();
+
+		try {
+			String query = "SELECT b.sunday, b.monday, b.tuesday, b.wednesday, b.thursday, b.friday, b.saturday FROM blocked_off_dates b JOIN user u ON b.user_id = u.user_id WHERE u.email = ?";
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1, email);
+
+			ResultSet rs = ps.executeQuery();
+
+			if (rs.next()) {
+				Settings set = new Settings();
+				Map<Repeat, Set<LocalTime>> hm = set.getBod().getBlockedDates();
+
+				for (Repeat day : Repeat.values()) {
+
+					if (day.DAY == -1)
+						continue;
+
+					String timesRaw = rs.getString(day.toString().toLowerCase());
+					Set<LocalTime> timeSet = new HashSet<>();
+
+					if (timesRaw != null && !timesRaw.isEmpty()) {
+						for (String lt : timesRaw.split(" ")) {
+							if (!lt.equals("null") && !lt.isEmpty()) {
+								timeSet.add(LocalTime.parse(lt));
+							}
+						}
+					}
+
+					hm.put(day, timeSet);
+				}
+				System.out.println(set.getBod().getBlockedDates().toString());
+				return set;
+			} else {
+				System.out.println("No blocked-off dates found for user.");
+				return null;
+			}
+
+		} catch (
+
+		Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+//	public static void main(String[] args) {
+//		DataBase.getSettings("chancekrueger@arizona.edu");
+//	}
+
+	public static boolean adjustBOD(String email, Settings set) {
+		Connection con = makeConnection();
+
+		try {
+			// Step 1: get user_id using email
+			String userIdQuery = "SELECT user_id FROM user WHERE email = ?";
+			PreparedStatement psId = con.prepareStatement(userIdQuery);
+			psId.setString(1, email);
+			ResultSet rsId = psId.executeQuery();
+
+			if (!rsId.next()) {
+				System.out.println("Email not found, cannot update blocked-off dates.");
+				return false;
+			}
+
+			int userId = rsId.getInt("user_id");
+
+			// Step 2: prepare blocked-off strings
+			Map<Repeat, Set<LocalTime>> bod = set.getBod().getBlockedDates();
+			String[] days = { "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday" };
+			String[] values = new String[7];
+
+			for (int i = 0; i < days.length; i++) {
+				Set<LocalTime> blocked = bod.getOrDefault(Repeat.dayOfWeek(i), new HashSet<>());
+				StringBuilder sb = new StringBuilder();
+
+				for (LocalTime time : blocked) {
+					sb.append(time.toString()).append(" ");
+				}
+
+				values[i] = sb.toString().trim(); // Clean trailing space
+			}
+
+			// Step 3: update blocked_off_dates table
+			String updateQuery = "UPDATE blocked_off_dates SET sunday = ?, monday = ?, tuesday = ?, wednesday = ?, thursday = ?, friday = ?, saturday = ? WHERE user_id = ?";
+			PreparedStatement psUpdate = con.prepareStatement(updateQuery);
+
+			for (int i = 0; i < 7; i++) {
+				psUpdate.setString(i + 1, values[i]);
+			}
+			psUpdate.setInt(8, userId);
+
+			int rowsAffected = psUpdate.executeUpdate();
+
+			return rowsAffected > 0;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 
