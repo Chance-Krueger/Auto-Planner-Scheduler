@@ -224,7 +224,7 @@ public class SignUpView {
 		}
 
 		// NOT IN DATA BASE YET
-		if (DataBase.verifyUser(email, password) == null) {
+		if (!DataBase.verifyUser(email, password)) {
 			Account account = new Account(email, password, secAnswer, Question.fromInt(question));
 			DataBase.addUser(account, new Settings());
 			this.frame.dispose();

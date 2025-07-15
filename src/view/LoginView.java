@@ -73,13 +73,13 @@ public class LoginView {
 
 		String[] sArray = { email, password };
 
-		if (DataBase.verifyUser(email, password) == null) {
+		if (DataBase.verifyUser(email, password)) {
 			System.out.println(AccountDataBase.hashPassword(password, AccountDataBase.generateSalt()));
 			incorrectLogin();
 		} else {
 			this.frame.dispose();
 			MainMenuView.main(sArray);
-		}
+		} 
 	}
 
 	private void incorrectLogin() {

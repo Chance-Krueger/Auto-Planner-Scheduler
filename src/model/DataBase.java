@@ -15,11 +15,8 @@ import model.Account.Question;
 
 public class DataBase {
 
-//	private static HashMap<Account, Calendar> data;
-
 	public DataBase() {
 		makeConnection();
-		populateData();
 	}
 
 	private static Connection makeConnection() {
@@ -45,8 +42,18 @@ public class DataBase {
 
 	}
 
-	private static void populateData() {
-//		data = null;
+	public static Calendar getUserCalendar(String email) {
+		// TODO
+
+		return null;
+	}
+
+	// update the Account's calendar
+	// if any errors return false
+	public static boolean updateAccountsCalendar(String email, Calendar cal) {
+		// TODO
+
+		return false;
 	}
 
 	public static boolean addUser(Account acct, Settings set) {
@@ -82,7 +89,6 @@ public class DataBase {
 				if (rs.next()) {
 					int userId = rs.getInt(1);
 					addUserToBOD(userId); // Initialize blocked-off dates
-					populateData();
 					System.out.println("User added successfully. User ID: " + userId);
 					return true;
 				}
@@ -201,7 +207,7 @@ public class DataBase {
 	// make sure email is in HashMap and that password is correct in Account
 	// if it is correct, give Calendar, else give null, which will tell it was
 	// incorrect
-	public static Calendar verifyUser(String email, String password) {
+	public static boolean verifyUser(String email, String password) {
 
 		Connection con = makeConnection();
 
@@ -217,12 +223,12 @@ public class DataBase {
 				password = AccountDataBase.hashPassword(password, salt);
 			} else {
 				System.out.println("Login failed: email was not not found.");
-				return null;
+				return false;
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return false;
 		}
 
 		try {
@@ -235,20 +241,15 @@ public class DataBase {
 			if (rs.next()) {
 				int userId = rs.getInt("user_id");
 				System.out.println("Login successful. User ID: " + userId);
-
-				// TODO: retrieve events using userId and build the Calendar object
-				Calendar calendar = new Calendar();
-				// calendar.populateFromDatabase(userId, con); // Custom method you’ll write
-
-				return calendar;
+				return true;
 			} else {
 				System.out.println("Login failed: credentials not found.");
-				return null;
+				return false;
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return false;
 		}
 	}
 
@@ -320,13 +321,6 @@ public class DataBase {
 			return null;
 		}
 
-	}
-
-	// update the Account's calendar
-	// if any errors return false
-	public boolean updateAccountsCalendar(String email, Calendar cal) {
-
-		return false;
 	}
 
 	public static Color getThemeColor(String email) {
