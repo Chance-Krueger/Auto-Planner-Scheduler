@@ -134,7 +134,8 @@ public class CreateEventView {
 	}
 
 	private void makeProjAssnEvent() {
-		// TODO Auto-generated method stub
+		this.frame.dispose();
+		ProjAssnView.main(this.acct);
 	}
 
 	private void calendarView() {

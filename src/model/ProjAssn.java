@@ -67,7 +67,7 @@ public class ProjAssn extends Event {
 	public ProjAssn(ProjAssn pa) {
 		super(pa.getTitle());
 		super.setLocation(pa.getLocation());
-		super.setRepeatDates(pa.getRepeatDates());
+		super.setRepeat(pa.getRepeat());
 		super.setNotes(pa.getNotes());
 		super.setUrl(pa.getUrl());
 
@@ -166,8 +166,9 @@ public class ProjAssn extends Event {
 	@Override
 	public String toString() {
 		return this.getTitle() + " is Due " + due.getMonth() + "/" + due.getDayOfMonth() + "/" + due.getYear() + " at: "
-				+ due.getHour() + ":" + due.getMinute() + ". With an estimated amount of time of " + this.time.toHours()
-				+ " hours and has a Pritority Level " + this.priority.toString().toLowerCase() + ".";
+				+ due.getHour() + ":" + due.getMinute() + ". With an estimated amount of time of "
+				+ this.time.toString() + " hours and has a Pritority Level " + this.priority.toString().toLowerCase()
+				+ ".";
 	}
 
 }

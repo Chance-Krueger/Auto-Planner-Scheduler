@@ -42,18 +42,93 @@ public class DataBase {
 
 	}
 
+	public static boolean addEventToUserCalendar(String email, Event e) {
+		String title = e.getTitle();
+		String location = e.getLocation();
+		String repeat = e.getRepeat().toString();
+		String notes = e.getNotes();
+		String url = e.getUrl();
+		String eventType = (e instanceof MeetingAppt) ? "MeetingAppt"
+				: (e instanceof ProjAssn) ? "ProjAssn" : "Unknown";
+
+		try (Connection con = makeConnection()) {
+			int userId = getUserID(email);
+			if (userId <= 0) {
+				System.err.println("Invalid user ID for email: " + email);
+				return false;
+			}
+
+			// Step 1: Insert into events table
+			String insertEvent = "INSERT INTO events (user_id, title, location, `repeat`, notes, url, event_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+			PreparedStatement psEvent = con.prepareStatement(insertEvent, Statement.RETURN_GENERATED_KEYS);
+			psEvent.setInt(1, userId);
+			psEvent.setString(2, title);
+			psEvent.setString(3, location);
+			psEvent.setString(4, repeat);
+			psEvent.setString(5, notes);
+			psEvent.setString(6, url);
+			psEvent.setString(7, eventType);
+			psEvent.executeUpdate();
+
+			ResultSet rsEvent = psEvent.getGeneratedKeys();
+			int eventId = rsEvent.next() ? rsEvent.getInt(1) : -1;
+			if (eventId <= 0)
+				return false;
+
+			// Step 2: Insert into type-specific table
+			if (e instanceof MeetingAppt m) {
+				String date = m.getDate().toString();
+				String startTime = m.getStartTime().toString();
+				String endTime = m.getEndTime().toString();
+
+				String insertMeeting = "INSERT INTO meeting_appt_events (cal_id, user_id, date, start_time, end_time) VALUES (?, ?, ?, ?, ?)";
+				PreparedStatement psMeeting = con.prepareStatement(insertMeeting);
+				psMeeting.setInt(1, eventId);
+				psMeeting.setInt(2, userId);
+				psMeeting.setString(3, date);
+				psMeeting.setString(4, startTime);
+				psMeeting.setString(5, endTime);
+				psMeeting.executeUpdate();
+
+			} else if (e instanceof ProjAssn p) {
+				String due = p.getDue().toString();
+				String priority = String.valueOf(p.getPriority());
+				String time = p.getTime().toString();
+
+				String insertProject = "INSERT INTO project_assn_events (cal_id, user_id, priority, time, due) VALUES (?, ?, ?, ?, ?)";
+				PreparedStatement psProj = con.prepareStatement(insertProject);
+				psProj.setInt(1, eventId);
+				psProj.setInt(2, userId);
+				psProj.setString(3, priority);
+				psProj.setString(4, time);
+				psProj.setString(5, due);
+				psProj.executeUpdate();
+			}
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	public static int getUserID(String email) {
+		try (Connection con = makeConnection()) {
+			String query = "SELECT user_id FROM user WHERE email = ?";
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1, email);
+			ResultSet rs = ps.executeQuery();
+			return rs.next() ? rs.getInt("user_id") : -1;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return -1;
+		}
+	}
+
 	public static Calendar getUserCalendar(String email) {
 		// TODO
 
 		return null;
-	}
-
-	// update the Account's calendar
-	// if any errors return false
-	public static boolean updateAccountsCalendar(String email, Calendar cal) {
-		// TODO
-
-		return false;
 	}
 
 	public static boolean addUser(Account acct, Settings set) {

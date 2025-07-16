@@ -51,8 +51,7 @@ public class MeetingAppt extends Event {
 	 * and end time.
 	 *
 	 * @param title     the title of the meeting
-	 * @param date      the {@code LocalDate} representing the date of the
-	 *                  meeting
+	 * @param date      the {@code LocalDate} representing the date of the meeting
 	 * @param startTime the {@code LocalTime} when the meeting starts
 	 * @param endTime   the {@code LocalTime} when the meeting ends
 	 */
@@ -71,7 +70,7 @@ public class MeetingAppt extends Event {
 	public MeetingAppt(MeetingAppt ma) {
 		super(ma.getTitle());
 		super.setLocation(ma.getLocation());
-		super.setRepeatDates(ma.getRepeatDates());
+		super.setRepeat(ma.getRepeat());
 		super.setNotes(ma.getNotes());
 		super.setUrl(ma.getUrl());
 

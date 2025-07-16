@@ -322,7 +322,7 @@ public class Calendar {
 	 *         update was rejected by the event
 	 * @throws NullPointerException if {@code e} or {@code list} is {@code null}
 	 */
-	public boolean adjustRepeatDates(Event e, ArrayList<String> list) {
+	public boolean adjustRepeatDates(Event e, String repeat) {
 
 		LocalDate ld = getDateFromEvent(e);
 
@@ -333,9 +333,7 @@ public class Calendar {
 
 		for (Event copyE : copy) {
 			if (copyE.equals(e)) {
-				if (e.setRepeatDates(list))
-					return true;
-				return false;
+				e.setRepeat(Repeat.checkRepeatFromString(repeat));
 			}
 		}
 		// Couldn't find Event

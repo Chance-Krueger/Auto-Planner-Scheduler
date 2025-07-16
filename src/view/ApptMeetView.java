@@ -10,7 +10,10 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 
+import model.DataBase;
+import model.Event;
 import model.MeetingAppt;
+import model.Repeat;
 
 import java.awt.Font;
 import java.time.LocalDate;
@@ -41,6 +44,9 @@ public class ApptMeetView {
 	private JButton confirmButton;
 	private JButton cancelButton;
 	private String[] acct;
+	private JLabel repeatError;
+	private JLabel timeError;
+	private JLabel titleError;
 
 	/**
 	 * Launch the application.
@@ -189,6 +195,13 @@ public class ApptMeetView {
 		cancelButton.setBounds(483, 509, 117, 29);
 		frame.getContentPane().add(cancelButton);
 
+		timeError = new JLabel("Start time must start before End Time");
+		timeError.setForeground(Color.RED);
+		timeError.setFont(new Font("PT Sans", Font.PLAIN, 13));
+		timeError.setBounds(257, 257, 467, 16);
+		this.timeError.setVisible(false);
+		frame.getContentPane().add(timeError);
+
 		dateLabel = new JLabel(this.dateOfEvent.getMonth() + " " + this.dateOfEvent.getDayOfMonth() + ", "
 				+ this.dateOfEvent.getYear(), SwingConstants.CENTER);
 		dateLabel.setFont(new Font("PT Sans", Font.PLAIN, 20));
@@ -197,11 +210,25 @@ public class ApptMeetView {
 		dateLabel.setBounds(257, 225, 472, 29);
 		frame.getContentPane().add(dateLabel);
 
-		JLabel lblNewLabel = new JLabel("");
-		lblNewLabel.setIcon(new ImageIcon(
+		titleError = new JLabel("Title can't be Empty");
+		titleError.setForeground(Color.RED);
+		titleError.setFont(new Font("PT Sans", Font.PLAIN, 13));
+		titleError.setBounds(257, 70, 467, 16);
+		this.titleError.setVisible(false);
+		frame.getContentPane().add(titleError);
+
+		repeatError = new JLabel("Must choose an Option");
+		repeatError.setForeground(Color.RED);
+		repeatError.setFont(new Font("PT Sans", Font.PLAIN, 13));
+		repeatError.setBounds(257, 324, 467, 16);
+		this.repeatError.setVisible(false);
+		frame.getContentPane().add(repeatError);
+
+		JLabel backgroundImage = new JLabel("");
+		backgroundImage.setIcon(new ImageIcon(
 				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/appt-meetingImage.png"));
-		lblNewLabel.setBounds(173, 0, 640, 548);
-		frame.getContentPane().add(lblNewLabel);
+		backgroundImage.setBounds(173, 0, 640, 548);
+		frame.getContentPane().add(backgroundImage);
 
 		this.confirmButton.addActionListener(e -> addEvent());
 		this.cancelButton.addActionListener(e -> createEventView());
@@ -215,8 +242,14 @@ public class ApptMeetView {
 		// startTime the LocalTime when the meeting starts
 		// endTime the LocalTime when the meeting ends
 
-		System.out.println(this.startSpinner.getValue().toString());
-		System.out.println(this.endSpinner.toString());
+		this.titleError.setVisible(false);
+		this.timeError.setVisible(false);
+		this.repeatError.setVisible(false);
+
+		if (this.titleText.getText().isEmpty()) {
+			this.titleError.setVisible(true);
+			return;
+		}
 
 		String first = this.startSpinner.getValue().toString();
 		first = first.substring(11, 16);
@@ -228,12 +261,30 @@ public class ApptMeetView {
 
 		// Check to see if start and end are legal (start is first and end is second
 		// with time)
-		if (start.compareTo(end) >= 0) {
-			// THROW MESSAGE TO USER AND MAKE THEM REDO IT AGAIN
+		if (start.isAfter(end) || start.equals(end)) {
+			this.timeError.setVisible(true);
+			return;
+		}
+
+		if (this.repeatError.getText().isEmpty()) {
+			this.repeatError.setVisible(true);
+			return;
 		}
 
 		MeetingAppt maEvent = new MeetingAppt(this.titleText.getText(), this.dateOfEvent, start, end);
+		maEvent.setLocation(this.locationText.getText());
+		Repeat type = Repeat.checkRepeatFromString(this.repeatDropDown.getSelectedItem().toString());
+		maEvent.setRepeat(type);
+		maEvent.setNotes(this.notesText.getText());
+		maEvent.setUrl(this.urlText.getText());
+
 		// ADD EVENT TO USERS HASHMAP AND PUT INTO THEIR DATA
+		if (DataBase.addEventToUserCalendar(email, maEvent)) {
+			this.frame.dispose();
+			CalendarView.main(this.acct);
+		} else {
+			System.err.println("Event not Added to User's Calendar");
+		}
 	}
 
 	private void createEventView() {

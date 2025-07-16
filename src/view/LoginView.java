@@ -73,7 +73,7 @@ public class LoginView {
 
 		String[] sArray = { email, password };
 
-		if (DataBase.verifyUser(email, password)) {
+		if (!DataBase.verifyUser(email, password)) {
 			System.out.println(AccountDataBase.hashPassword(password, AccountDataBase.generateSalt()));
 			incorrectLogin();
 		} else {

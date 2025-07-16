@@ -55,14 +55,14 @@ public class Event {
 
 	private String title;
 	private String location;
-	private Map<Repeat, ArrayList<Repeat>> repeatDates;
+	private Repeat repeat;
 	private String notes;
 	private String url;
 
 	public Event(String title) {
 		this.title = title;
 		this.location = "";
-		this.repeatDates = new HashMap<Repeat, ArrayList<Repeat>>();
+		this.repeat = Repeat.NONE;
 		this.notes = "";
 		this.url = "";
 	}
@@ -84,7 +84,7 @@ public class Event {
 	public Event(Event e) {
 		this.title = e.title;
 		this.location = e.location;
-		this.repeatDates = e.repeatDates;
+		this.repeat = e.repeat;
 		this.notes = e.notes;
 		this.url = e.url;
 	}
@@ -130,8 +130,8 @@ public class Event {
 	 *
 	 * @return an unmodifiable map of repeat types and their values
 	 */
-	public Map<Repeat, ArrayList<Repeat>> getRepeatDates() {
-		return Collections.unmodifiableMap(this.repeatDates);
+	public Repeat getRepeat() {
+		return this.repeat;
 	}
 
 	// ESCAPING REFERENCE?
@@ -140,8 +140,8 @@ public class Event {
 	 *
 	 * @param repeatDates2 the map of repeat types and values to set
 	 */
-	public void setRepeatDates(Map<Repeat, ArrayList<Repeat>> repeatDates2) {
-		this.repeatDates = repeatDates2;
+	public void setRepeat(Repeat repeatDates2) {
+		this.repeat = repeatDates2;
 	}
 
 	/**
@@ -171,46 +171,46 @@ public class Event {
 	 *                              contains {@code null} entries
 	 * @see Repeat
 	 */
-	public boolean setRepeatDates(ArrayList<String> repeatRequirements) {
-
-		Repeat first = Repeat.checkRepeatFromString(repeatRequirements.get(0));
-
-		HashMap<Repeat, ArrayList<Repeat>> c = new HashMap<Repeat, ArrayList<Repeat>>();
-		ArrayList<Repeat> cl = new ArrayList<Repeat>();
-
-		boolean specType = ((first == Repeat.CUSTOM) || (first == Repeat.EVERY2WEEKS) || (first == Repeat.EVERYDAY)
-				|| (first == Repeat.EVERYMONTH) || (first == Repeat.EVERYWEEK) || (first == Repeat.EVERYYEAR));
-
-		if (first == Repeat.EVERYYEAR || first == Repeat.EVERYMONTH) {
-			if (repeatRequirements.size() != 1) {
-				return false;
-			}
-			cl.add(Repeat.NONE);
-			c.put(first, cl);
-			this.repeatDates = c;
-			return true;
-		}
-
-		if (!specType)
-			return false;
-
-		for (int i = 1; i < repeatRequirements.size(); i++) {
-			Repeat r = Repeat.checkRepeatFromString(repeatRequirements.get(i));
-
-			boolean isDay = ((r == Repeat.MON) || (r == Repeat.TUE) || (r == Repeat.WED) || (r == Repeat.THR)
-					|| (r == Repeat.FRI) || (r == Repeat.SAT) || (r == Repeat.SUN));
-
-			if (r == null)
-				return false;
-			else if (isDay)
-				cl.add(r);
-			else
-				return false;
-		}
-		c.put(first, cl);
-		this.repeatDates = c;
-		return true;
-	}
+//	public boolean setRepeatDates(ArrayList<String> repeatRequirements) {
+//
+//		Repeat first = Repeat.checkRepeatFromString(repeatRequirements.get(0));
+//
+//		HashMap<Repeat, ArrayList<Repeat>> c = new HashMap<Repeat, ArrayList<Repeat>>();
+//		ArrayList<Repeat> cl = new ArrayList<Repeat>();
+//
+//		boolean specType = ((first == Repeat.CUSTOM) || (first == Repeat.EVERY2WEEKS) || (first == Repeat.EVERYDAY)
+//				|| (first == Repeat.EVERYMONTH) || (first == Repeat.EVERYWEEK) || (first == Repeat.EVERYYEAR));
+//
+//		if (first == Repeat.EVERYYEAR || first == Repeat.EVERYMONTH) {
+//			if (repeatRequirements.size() != 1) {
+//				return false;
+//			}
+//			cl.add(Repeat.NONE);
+//			c.put(first, cl);
+//			this.repeatDates = c;
+//			return true;
+//		}
+//
+//		if (!specType)
+//			return false;
+//
+//		for (int i = 1; i < repeatRequirements.size(); i++) {
+//			Repeat r = Repeat.checkRepeatFromString(repeatRequirements.get(i));
+//
+//			boolean isDay = ((r == Repeat.MON) || (r == Repeat.TUE) || (r == Repeat.WED) || (r == Repeat.THR)
+//					|| (r == Repeat.FRI) || (r == Repeat.SAT) || (r == Repeat.SUN));
+//
+//			if (r == null)
+//				return false;
+//			else if (isDay)
+//				cl.add(r);
+//			else
+//				return false;
+//		}
+//		c.put(first, cl);
+//		this.repeatDates = c;
+//		return true;
+//	}
 
 	/**
 	 * Gets the notes for the event.
@@ -263,6 +263,6 @@ public class Event {
 	public boolean equals(Object e) {
 		return ((Event) (e)).title.equals(this.title) && ((Event) (e)).location.equals(this.location)
 				&& ((Event) (e)).notes.equals(this.notes) && ((Event) (e)).url.equals(this.url)
-				&& ((Event) (e)).repeatDates.equals(this.repeatDates);
+				&& ((Event) (e)).repeat.equals(this.repeat);
 	}
 }
