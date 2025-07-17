@@ -6,6 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Map;
@@ -126,9 +129,81 @@ public class DataBase {
 	}
 
 	public static Calendar getUserCalendar(String email) {
-		// TODO
+		Connection con = makeConnection();
+		Calendar cal = new Calendar();
 
-		return null;
+		try {
+			// Step 1: Get user_id
+			PreparedStatement psId = con.prepareStatement("SELECT user_id FROM user WHERE email = ?");
+			psId.setString(1, email);
+			ResultSet rsId = psId.executeQuery();
+			if (!rsId.next())
+				return null;
+
+			int userId = rsId.getInt("user_id");
+
+			// Step 2: Get all events for user
+			String eventQuery = "SELECT * FROM events WHERE user_id = ?";
+			PreparedStatement psEvents = con.prepareStatement(eventQuery);
+			psEvents.setInt(1, userId);
+			ResultSet rsEvents = psEvents.executeQuery();
+
+			while (rsEvents.next()) {
+				int calId = rsEvents.getInt("cal_id");
+				String title = rsEvents.getString("title");
+				String url = rsEvents.getString("url");
+				String notes = rsEvents.getString("notes");
+				String location = rsEvents.getString("location");
+				String repeat = rsEvents.getString("repeat");
+				String type = rsEvents.getString("event_type");
+
+				if ("ProjAssn".equalsIgnoreCase(type)) {
+					PreparedStatement psProj = con
+							.prepareStatement("SELECT * FROM project_assn_events WHERE cal_id = ?");
+					psProj.setInt(1, calId);
+					ResultSet rsProj = psProj.executeQuery();
+					if (rsProj.next()) {
+						Priority priority = Priority.fromToString(rsProj.getString("priority"));
+						String estimate = rsProj.getString("time");
+						LocalDateTime due = LocalDateTime.parse(rsProj.getString("due"));
+						Duration duration = Duration.parse(estimate); // parse ISO-8601 format safely
+
+						ProjAssn pa = new ProjAssn(title, priority, duration, due);
+
+						pa.setLocation(location);
+						pa.setUrl(url);
+						pa.setNotes(notes);
+						pa.setRepeat(Repeat.checkRepeatFromString(repeat));
+						cal.addEventToCalendar(pa);
+					}
+				} else if ("MeetingAppt".equalsIgnoreCase(type)) {
+					PreparedStatement psMeet = con
+							.prepareStatement("SELECT * FROM meeting_appt_events WHERE cal_id = ?");
+					psMeet.setInt(1, calId);
+					ResultSet rsMeet = psMeet.executeQuery();
+					if (rsMeet.next()) {
+						LocalDate date = rsMeet.getDate("date").toLocalDate();
+						LocalTime start = LocalTime.parse(rsMeet.getString("start_time"));
+						LocalTime end = LocalTime.parse(rsMeet.getString("end_time"));
+
+						MeetingAppt ma = new MeetingAppt(title, date, start, end);
+						ma.setLocation(location);
+						ma.setUrl(url);
+						ma.setNotes(notes);
+						ma.setRepeat(Repeat.checkRepeatFromString(repeat));
+						cal.addEventToCalendar(ma);
+					}
+				} else {
+					System.err.println("Unknown event type for cal_id: " + calId);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return cal;
 	}
 
 	public static boolean addUser(Account acct, Settings set) {
@@ -528,7 +603,8 @@ public class DataBase {
 	}
 
 //	public static void main(String[] args) {
-//		DataBase.getSettings("chancekrueger@arizona.edu");
+//		Calendar c = DataBase.getUserCalendar("chancekrueger@arizona.edu");
+//		System.out.println(c.getCalendar().toString());
 //	}
 
 	public static boolean adjustBOD(String email, Settings set) {

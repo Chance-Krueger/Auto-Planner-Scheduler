@@ -1,9 +1,6 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalTime;
 
 /**
  * The {@code Event} class serves as an abstract representation of a general
@@ -45,7 +42,7 @@ import java.util.Map;
  * @author Chance Krueger
  */
 
-public class Event {
+public class Event implements Comparable<Event> {
 
 //	Project/Assignment(Priority, time it'll take, due date, due time(optional?), etc), ... extends: Event
 //	Meeting/Appointment(When, start/end times), ..., extends: Event
@@ -264,5 +261,16 @@ public class Event {
 		return ((Event) (e)).title.equals(this.title) && ((Event) (e)).location.equals(this.location)
 				&& ((Event) (e)).notes.equals(this.notes) && ((Event) (e)).url.equals(this.url)
 				&& ((Event) (e)).repeat.equals(this.repeat);
+	}
+
+	@Override
+	public int compareTo(Event other) {
+		LocalTime thisTime = this instanceof ProjAssn ? ((ProjAssn) this).getDue().toLocalTime()
+				: this instanceof MeetingAppt ? ((MeetingAppt) this).getStartTime() : LocalTime.MAX;
+
+		LocalTime otherTime = other instanceof ProjAssn ? ((ProjAssn) other).getDue().toLocalTime()
+				: other instanceof MeetingAppt ? ((MeetingAppt) other).getStartTime() : LocalTime.MAX;
+
+		return thisTime.compareTo(otherTime);
 	}
 }

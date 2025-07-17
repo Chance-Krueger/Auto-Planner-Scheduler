@@ -95,6 +95,7 @@ public class ApptMeetView {
 		this.acct = new String[1];
 		this.acct[0] = "";
 		this.dateOfEvent = LocalDate.now(); // TESTING
+		this.email = "chancekrueger@arizona.edu"; // TESTING
 		initialize();
 	}
 

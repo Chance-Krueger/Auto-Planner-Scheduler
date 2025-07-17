@@ -13,8 +13,6 @@ import model.DataBase;
 
 import javax.swing.JTextField;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
@@ -33,8 +31,6 @@ public class LoginView {
 
 	private JLabel loginImage;
 	private JLabel backgroundColor;
-
-	private boolean isError;
 
 	// CLASSES
 	private JLabel errorMessage;
@@ -59,7 +55,6 @@ public class LoginView {
 	 * Create the application.
 	 */
 	public LoginView() {
-		isError = false;
 		initialize();
 	}
 
@@ -79,11 +74,10 @@ public class LoginView {
 		} else {
 			this.frame.dispose();
 			MainMenuView.main(sArray);
-		} 
+		}
 	}
 
 	private void incorrectLogin() {
-		this.isError = true;
 		System.err.println("Incorrect Information. Please Try Again.");
 		errorMessage.setVisible(true);
 		return;

@@ -4,14 +4,18 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+
 import javax.swing.JLabel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 
 import model.Calendar;
+import model.DataBase;
 import model.Event;
 import model.MeetingAppt;
 import model.ProjAssn;
@@ -88,15 +92,15 @@ public class CalendarView {
 		this.acct[0] = "";
 		curTime = LocalDate.now();
 		this.acct[1] = curTime.toString();
-		this.calendar = new Calendar();
+		this.calendar = DataBase.getUserCalendar("chancekrueger@arizona.edu"); // TESTING
 		initialize();
 
 	}
 
 	public CalendarView(String email) {
 		this.acct = new String[2];
-		this.acct[0] = email; // -> NEED TO GO THROUGH SQL TO GRAB DATA? OR SHOULD I MAKE IT IN THE ACCOUNT?
-		this.calendar = new Calendar(); // ^^^
+		this.acct[0] = email;
+		this.calendar = DataBase.getUserCalendar(email);
 		curTime = LocalDate.now();
 		this.acct[1] = curTime.toString();
 		initialize();
@@ -106,7 +110,7 @@ public class CalendarView {
 	public CalendarView(String email, String date) {
 		this.acct = new String[2];
 		this.acct[0] = email; // -> NEED TO GO THROUGH SQL TO GRAB DATA? OR SHOULD I MAKE IT IN THE ACCOUNT?
-		this.calendar = new Calendar(); // ^^^
+		this.calendar = DataBase.getUserCalendar(email);
 		curTime = LocalDate.parse(date);
 		this.acct[1] = curTime.toString();
 		initialize();
@@ -206,12 +210,16 @@ public class CalendarView {
 
 		ArrayList<Event> events = this.calendar.getCalendar().get(selectedDate);
 
+		System.out.println(events);
+
 		if (events == null || events.size() == 0) {
 			model.add(0, "<html><b>No Events Have Been Added</b></html>");
 			model.add(1, "<html><b>Yet on " + selectedDate.getMonth() + " " + selectedDate.getDayOfMonth() + ", "
 					+ selectedDate.getYear() + "</b></html>");
 			return model;
 		}
+
+		Collections.sort(events);
 
 		for (Event event : events) {
 			String label = formatEventSummary(event);
@@ -222,19 +230,23 @@ public class CalendarView {
 	}
 
 	private String formatEventSummary(Event event) {
-		String title = event.getTitle();
-		String time = "";
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+		String title = event.getTitle();
+		String time;
 
 		if (event instanceof ProjAssn) {
-			time = ((ProjAssn) event).getDue().format(formatter);
+			time = "Due @ " + ((ProjAssn) event).getDue().format(timeFormatter); // full date-time
+		} else if (event instanceof MeetingAppt) {
+			time = ((MeetingAppt) event).getStartTime().format(timeFormatter) + "-"
+					+ ((MeetingAppt) event).getEndTime().format(timeFormatter); // just time
 		} else {
-			time = ((MeetingAppt) event).getStartTime().format(formatter);
-
+			time = "Time unknown";
 		}
 
-		return time + " — " + title;
+		return title + " | " + time;
 	}
 
 	private void createDates() {
@@ -310,9 +322,38 @@ public class CalendarView {
 	private void addDayLabel(int day, int x, int y) {
 		JLabel lb = new DayLabel(String.valueOf(day), x, y, Color.GRAY, Color.BLACK, true);
 
+		LocalDate labelDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), day);
+		LocalDate today = LocalDate.now();
+
+		if (labelDate.isEqual(today)) {
+			lb.setBackground(new Color(135, 206, 250)); // highlight today
+		} else if (labelDate.isEqual(curTime)) {
+			lb.setBackground(new Color(173, 216, 230)); // keep today red
+		} else {
+			lb.setBackground(Color.WHITE); // default for other days
+		}
+
 		lb.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				onDateClicked(day);
+
+				LocalDate today = LocalDate.now();
+				LocalDate clickedDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), day);
+
+				// Reset all labels
+				for (JLabel label : dayLabels) {
+					int labelDay = Integer.parseInt(label.getText());
+					LocalDate labelDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), labelDay);
+
+					if (labelDate.isEqual(today)) {
+						label.setBackground(new Color(135, 206, 250)); // keep today red
+					} else {
+						label.setBackground(Color.WHITE); // default reset
+					}
+				}
+
+				// Highlight the clicked label (even if it's today, this will override)
+				lb.setBackground(new Color(173, 216, 230));
 			}
 		});
 
@@ -320,10 +361,11 @@ public class CalendarView {
 		dayLabels.add(lb);
 	}
 
+	// NEXT: when selected a Event from Event List, open up a new pop-up window that
+	// will let them look at the entire thing and let them be able to edit it.
+
 	private void onDateClicked(int day) {
 		LocalDate clickedDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), day);
-
-		// TODO: Load events, show schedule screen,
 
 		this.curTime = LocalDate.of(clickedDate.getYear(), clickedDate.getMonth(), clickedDate.getDayOfMonth());
 		this.acct[1] = this.curTime.toString();
