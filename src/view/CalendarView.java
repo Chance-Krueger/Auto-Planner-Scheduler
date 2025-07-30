@@ -3,7 +3,10 @@ package view;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -13,19 +16,35 @@ import javax.swing.JLabel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import model.Calendar;
 import model.DataBase;
 import model.Event;
 import model.MeetingAppt;
+import model.Priority;
 import model.ProjAssn;
+import model.Repeat;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+
 import java.awt.Cursor;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.SpinnerDateModel;
 
 public class CalendarView {
 
@@ -38,6 +57,7 @@ public class CalendarView {
 	private Calendar calendar;
 	private String[] acct;
 	private ArrayList<JLabel> dayLabels = new ArrayList<JLabel>();
+	private ArrayList<Event> displayedEvents = new ArrayList<>();
 	private JButton backButton;
 	private JList<String> eventList;
 	private JButton addButton;
@@ -60,6 +80,7 @@ public class CalendarView {
 			});
 		} else if (args.length == 2) {
 			EventQueue.invokeLater(new Runnable() {
+
 				public void run() {
 					try {
 						CalendarView window = new CalendarView(args[0], args[1]);
@@ -82,6 +103,7 @@ public class CalendarView {
 				}
 			});
 		}
+
 	}
 
 	/**
@@ -185,6 +207,18 @@ public class CalendarView {
 		frame.getContentPane().add(backButton);
 
 		eventList = new JList<String>(createEventList(this.curTime));
+
+		eventList.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int index = eventList.locationToIndex(e.getPoint());
+				if (index >= 0 && index < displayedEvents.size()) {
+					Event selectedEvent = displayedEvents.get(index);
+					System.out.println("Clicked event: " + selectedEvent.getTitle());
+					openEditPopup(selectedEvent);
+				}
+			}
+		});
+
 		eventList.setBackground(new Color(244, 248, 251));
 		eventList.setBorder(null);
 		eventList.setBounds(575, 179, 188, 112);
@@ -205,12 +239,188 @@ public class CalendarView {
 		frame.getContentPane().add(calendarBackground);
 	}
 
+	private void openEditPopup(Event e) {
+		JDialog dialog = new JDialog(frame, "Edit Event", true);
+		dialog.setLayout(null);
+		dialog.setSize(420, 400);
+		dialog.setLocationRelativeTo(null);
+		dialog.setTitle("Edit Event");
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
+
+		// Title
+		JLabel titleLabel = new JLabel("Title:");
+		titleLabel.setBounds(20, 20, 100, 25);
+		dialog.add(titleLabel);
+
+		JTextField titleField = new JTextField(e.getTitle());
+		titleField.setBounds(130, 20, 250, 25);
+		dialog.add(titleField);
+
+		// Location
+		JLabel locationLabel = new JLabel("Location:");
+		locationLabel.setBounds(20, 55, 100, 25);
+		dialog.add(locationLabel);
+
+		JTextField locationField = new JTextField(e.getLocation());
+		locationField.setBounds(130, 55, 250, 25);
+		dialog.add(locationField);
+
+		// URL
+		JLabel urlLabel = new JLabel("URL:");
+		urlLabel.setBounds(20, 90, 100, 25);
+		dialog.add(urlLabel);
+
+		JTextField urlField = new JTextField(e.getUrl());
+		urlField.setBounds(130, 90, 250, 25);
+		dialog.add(urlField);
+
+		// Notes
+		JLabel notesLabel = new JLabel("Notes:");
+		notesLabel.setBounds(20, 125, 100, 25);
+		dialog.add(notesLabel);
+		JTextArea notesArea = new JTextArea(e.getNotes());
+		notesArea.setLineWrap(true);
+		notesArea.setWrapStyleWord(true);
+		JScrollPane scrollPane = new JScrollPane(notesArea);
+		scrollPane.setBounds(130, 125, 250, 60); // Adjust height for visibility
+		dialog.add(scrollPane);
+		// Repeat
+		JLabel repeatLabel = new JLabel("Repeat:");
+		repeatLabel.setBounds(20, 160, 100, 25);
+		dialog.add(repeatLabel);
+
+		String[] repeatOptions = { "None", "Everyday", "Every Week", "Every 2 Weeks", "Every Month", "Every Year" };
+		JComboBox<String> repeatDropdown = new JComboBox<>(repeatOptions);
+		repeatDropdown.setSelectedItem(e.getRepeat().toString());
+		repeatDropdown.setBounds(130, 160, 250, 25);
+		dialog.add(repeatDropdown);
+
+		java.util.Date now = new java.util.Date();
+
+		// Save Button
+		JButton saveBtn = new JButton("Save");
+		saveBtn.setBounds(150, 300, 100, 30);
+		dialog.add(saveBtn);
+
+		if (e instanceof MeetingAppt m) {
+			// Start Time
+			JLabel startLabel = new JLabel("Start Time:");
+			startLabel.setBounds(20, 195, 100, 25);
+			dialog.add(startLabel);
+
+			SpinnerDateModel smStart = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
+			JSpinner startSpinner = new JSpinner(smStart);
+			startSpinner.setBounds(130, 195, 100, 25);
+			JSpinner.DateEditor deStart = new JSpinner.DateEditor(startSpinner, "HH:mm");
+			startSpinner.setEditor(deStart);
+			startSpinner.setValue(java.sql.Time.valueOf(m.getStartTime()));
+			dialog.add(startSpinner);
+
+			// End Time
+			JLabel endLabel = new JLabel("End Time:");
+			endLabel.setBounds(20, 230, 100, 25);
+			dialog.add(endLabel);
+
+			SpinnerDateModel smEnd = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
+			JSpinner endSpinner = new JSpinner(smEnd);
+			endSpinner.setBounds(130, 230, 100, 25);
+			JSpinner.DateEditor deEnd = new JSpinner.DateEditor(endSpinner, "HH:mm");
+			endSpinner.setEditor(deEnd);
+			endSpinner.setValue(java.sql.Time.valueOf(m.getEndTime()));
+			dialog.add(endSpinner);
+
+			saveBtn.addActionListener(a -> {
+				System.out.println("SAVE BUTTON PUSED");
+				try {
+					LocalTime start = LocalTime.parse(new SimpleDateFormat("HH:mm").format(startSpinner.getValue()));
+					LocalTime end = LocalTime.parse(new SimpleDateFormat("HH:mm").format(endSpinner.getValue()));
+
+					MeetingAppt updated = new MeetingAppt(titleField.getText(), m.getDate(), start, end);
+					updated.setLocation(locationField.getText());
+					updated.setUrl(urlField.getText());
+					updated.setNotes(notesArea.getText());
+					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
+
+					DataBase.updateEventInUserCalendar(acct[0], e, updated);
+					dialog.dispose();
+					CalendarView.main(acct); // Optional refresh
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+
+		} else if (e instanceof ProjAssn p) {
+			// Due Time
+			JLabel dueLabel = new JLabel("Due Time:");
+			dueLabel.setBounds(20, 195, 100, 25);
+			dialog.add(dueLabel);
+
+			SpinnerDateModel smDue = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
+			JSpinner dueBySpinner = new JSpinner(smDue);
+			dueBySpinner.setBounds(130, 195, 100, 25);
+			JSpinner.DateEditor deDue = new JSpinner.DateEditor(dueBySpinner, "HH:mm");
+			dueBySpinner.setEditor(deDue);
+			dueBySpinner.setValue(java.sql.Time.valueOf(p.getDue().toLocalTime()));
+			dialog.add(dueBySpinner);
+
+			// Estimate Duration
+			JLabel estimateLabel = new JLabel("Estimate:");
+			estimateLabel.setBounds(20, 230, 100, 25);
+			dialog.add(estimateLabel);
+
+			String[] generatedOptions = ProjAssnView.generateTimeOptions(0.25, 48.0, 0.25);
+			String[] sArray = new String[generatedOptions.length + 1];
+			sArray[0] = String.format("%.1f hours", p.getTime().toMinutes() / 60.0);
+			System.arraycopy(generatedOptions, 0, sArray, 1, generatedOptions.length);
+
+			JComboBox<String> estimateDropdown = new JComboBox<>(sArray);
+			estimateDropdown.setSelectedItem(sArray[0]);
+			estimateDropdown.setBounds(130, 230, 120, 25);
+			dialog.add(estimateDropdown);
+
+			// Priority
+			JLabel priorityLabel = new JLabel("Priority:");
+			priorityLabel.setBounds(20, 265, 100, 25);
+			dialog.add(priorityLabel);
+
+			JComboBox<Priority> priorityDropdown = new JComboBox<>(Priority.values());
+			priorityDropdown.setSelectedItem(p.getPriority());
+			priorityDropdown.setBounds(130, 265, 120, 25);
+			dialog.add(priorityDropdown);
+
+			saveBtn.addActionListener(a -> {
+				System.out.println("SAVE BUTTON PUSED");
+				try {
+					LocalTime dueTime = LocalTime.parse(new SimpleDateFormat("HH:mm").format(dueBySpinner.getValue()));
+
+					Duration dur = Duration.ofMinutes((long) (Double.parseDouble(
+							estimateDropdown.getSelectedItem().toString().replace("hours", "").trim()) * 60));
+
+					ProjAssn updated = new ProjAssn(titleField.getText(), (Priority) priorityDropdown.getSelectedItem(),
+							dur, LocalDateTime.of(p.getDue().toLocalDate(), dueTime));
+					updated.setLocation(locationField.getText());
+					updated.setUrl(urlField.getText());
+					updated.setNotes(notesArea.getText());
+					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
+
+					DataBase.updateEventInUserCalendar(acct[0], e, updated);
+					dialog.dispose();
+					CalendarView.main(acct);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+		}
+		dialog.setVisible(true);
+
+	}
+
 	private ListModel<String> createEventList(LocalDate selectedDate) {
 		DefaultListModel<String> model = new DefaultListModel<>();
+		displayedEvents.clear(); // reset the list
 
 		ArrayList<Event> events = this.calendar.getCalendar().get(selectedDate);
-
-		System.out.println(events);
 
 		if (events == null || events.size() == 0) {
 			model.add(0, "<html><b>No Events Have Been Added</b></html>");
@@ -224,6 +434,7 @@ public class CalendarView {
 		for (Event event : events) {
 			String label = formatEventSummary(event);
 			model.addElement(label);
+			displayedEvents.add(event); // ⚡ keep actual event
 		}
 
 		return model;
@@ -360,9 +571,6 @@ public class CalendarView {
 		frame.getContentPane().add(lb);
 		dayLabels.add(lb);
 	}
-
-	// NEXT: when selected a Event from Event List, open up a new pop-up window that
-	// will let them look at the entire thing and let them be able to edit it.
 
 	private void onDateClicked(int day) {
 		LocalDate clickedDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), day);

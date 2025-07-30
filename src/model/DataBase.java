@@ -659,4 +659,100 @@ public class DataBase {
 		}
 	}
 
+	public static boolean updateEventInUserCalendar(String email, Event e, ProjAssn updated) {
+		try (Connection con = makeConnection()) {
+			int userId = getUserID(email);
+			if (userId <= 0)
+				return false;
+
+			// Step 1: Get cal_id from events table
+			String query = "SELECT cal_id FROM events WHERE user_id = ? AND title = ? AND event_type = ?";
+			PreparedStatement psFind = con.prepareStatement(query);
+			psFind.setInt(1, userId);
+			psFind.setString(2, e.getTitle());
+			psFind.setString(3, "ProjAssn");
+
+			ResultSet rs = psFind.executeQuery();
+			if (!rs.next())
+				return false;
+
+			int eventId = rs.getInt("cal_id");
+
+			// Step 2: Update shared event data
+			String updateEvent = "UPDATE events SET title = ?, location = ?, `repeat` = ?, notes = ?, url = ? WHERE cal_id = ? AND user_id = ?";
+			PreparedStatement psEvent = con.prepareStatement(updateEvent);
+			psEvent.setString(1, updated.getTitle());
+			psEvent.setString(2, updated.getLocation());
+			psEvent.setString(3, updated.getRepeat().toString());
+			psEvent.setString(4, updated.getNotes());
+			psEvent.setString(5, updated.getUrl());
+			psEvent.setInt(6, eventId);
+			psEvent.setInt(7, userId);
+			psEvent.executeUpdate();
+
+			// Step 3: Update project_assn_events table
+			String updateProj = "UPDATE project_assn_events SET priority = ?, time = ?, due = ? WHERE cal_id = ? AND user_id = ?";
+			PreparedStatement psProj = con.prepareStatement(updateProj);
+			psProj.setString(1, updated.getPriority().toString());
+			psProj.setString(2, updated.getTime().toString());
+			psProj.setString(3, updated.getDue().toString());
+			psProj.setInt(4, eventId);
+			psProj.setInt(5, userId);
+			psProj.executeUpdate();
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean updateEventInUserCalendar(String email, Event e, MeetingAppt updated) {
+		try (Connection con = makeConnection()) {
+			int userId = getUserID(email);
+			if (userId <= 0)
+				return false;
+
+			// Step 1: Find event ID from events table
+			String query = "SELECT cal_id FROM events WHERE user_id = ? AND title = ? AND event_type = ?";
+			PreparedStatement psFind = con.prepareStatement(query);
+			psFind.setInt(1, userId);
+			psFind.setString(2, e.getTitle());
+			psFind.setString(3, "MeetingAppt");
+
+			ResultSet rs = psFind.executeQuery();
+			if (!rs.next())
+				return false;
+
+			int eventId = rs.getInt("cal_id");
+
+			// Step 2: Update common fields
+			String updateEvent = "UPDATE events SET title = ?, location = ?, `repeat` = ?, notes = ?, url = ? WHERE cal_id = ? AND user_id = ?";
+			PreparedStatement psEvent = con.prepareStatement(updateEvent);
+			psEvent.setString(1, updated.getTitle());
+			psEvent.setString(2, updated.getLocation());
+			psEvent.setString(3, updated.getRepeat().toString());
+			psEvent.setString(4, updated.getNotes());
+			psEvent.setString(5, updated.getUrl());
+			psEvent.setInt(6, eventId);
+			psEvent.setInt(7, userId);
+			psEvent.executeUpdate();
+
+			// Step 3: Update meeting_appt_events table
+			String updateMeeting = "UPDATE meeting_appt_events SET date = ?, start_time = ?, end_time = ? WHERE cal_id = ? AND user_id = ?";
+			PreparedStatement psMeeting = con.prepareStatement(updateMeeting);
+			psMeeting.setString(1, updated.getDate().toString());
+			psMeeting.setString(2, updated.getStartTime().toString());
+			psMeeting.setString(3, updated.getEndTime().toString());
+			psMeeting.setInt(4, eventId);
+			psMeeting.setInt(5, userId);
+			psMeeting.executeUpdate();
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		}
+	}
+
 }

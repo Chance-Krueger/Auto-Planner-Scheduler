@@ -251,7 +251,7 @@ public class ProjAssnView {
 		ProjAssn pa = new ProjAssn(this.titleText.getText(),
 				Priority.fromInteger(Integer.parseInt(this.priorityDropDown.getSelectedItem().toString())), dur,
 				LocalDateTime.of(this.dateOfEvent, dueTime));
-		
+
 		pa.setLocation(this.locationText.getText());
 		Repeat type = Repeat.checkRepeatFromString(this.repeatDropDown.getSelectedItem().toString());
 		pa.setRepeat(type);
@@ -274,7 +274,7 @@ public class ProjAssnView {
 		CreateEventView.main(this.acct);
 	}
 
-	private static String[] generateTimeOptions(double min, double max, double step) {
+	public static String[] generateTimeOptions(double min, double max, double step) {
 		List<String> options = new ArrayList<>();
 		for (double t = min; t <= max; t += step) {
 			boolean flag = false;

@@ -96,6 +96,7 @@ public enum Repeat {
 	 */
 	@Override
 	public String toString() {
-		return this.TOSTRING;
+		return TOSTRING;
 	}
+
 }
