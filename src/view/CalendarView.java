@@ -242,9 +242,8 @@ public class CalendarView {
 	private void openEditPopup(Event e) {
 		JDialog dialog = new JDialog(frame, "Edit Event", true);
 		dialog.setLayout(null);
-		dialog.setSize(420, 400);
+		dialog.setSize(420, 460); // Increased height
 		dialog.setLocationRelativeTo(null);
-		dialog.setTitle("Edit Event");
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
 
@@ -279,39 +278,41 @@ public class CalendarView {
 		JLabel notesLabel = new JLabel("Notes:");
 		notesLabel.setBounds(20, 125, 100, 25);
 		dialog.add(notesLabel);
+
 		JTextArea notesArea = new JTextArea(e.getNotes());
 		notesArea.setLineWrap(true);
 		notesArea.setWrapStyleWord(true);
 		JScrollPane scrollPane = new JScrollPane(notesArea);
-		scrollPane.setBounds(130, 125, 250, 60); // Adjust height for visibility
+		scrollPane.setBounds(130, 125, 250, 60);
 		dialog.add(scrollPane);
-		// Repeat
+
+		// Repeat moved further down
 		JLabel repeatLabel = new JLabel("Repeat:");
-		repeatLabel.setBounds(20, 160, 100, 25);
+		repeatLabel.setBounds(20, 210, 100, 25);
 		dialog.add(repeatLabel);
 
 		String[] repeatOptions = { "None", "Everyday", "Every Week", "Every 2 Weeks", "Every Month", "Every Year" };
 		JComboBox<String> repeatDropdown = new JComboBox<>(repeatOptions);
 		repeatDropdown.setSelectedItem(e.getRepeat().toString());
-		repeatDropdown.setBounds(130, 160, 250, 25);
+		repeatDropdown.setBounds(130, 210, 250, 25);
 		dialog.add(repeatDropdown);
 
 		java.util.Date now = new java.util.Date();
 
-		// Save Button
+		// Save Button adjusted vertically
 		JButton saveBtn = new JButton("Save");
-		saveBtn.setBounds(150, 300, 100, 30);
+		saveBtn.setBounds(150, 360, 100, 30);
 		dialog.add(saveBtn);
 
 		if (e instanceof MeetingAppt m) {
 			// Start Time
 			JLabel startLabel = new JLabel("Start Time:");
-			startLabel.setBounds(20, 195, 100, 25);
+			startLabel.setBounds(20, 250, 100, 25);
 			dialog.add(startLabel);
 
 			SpinnerDateModel smStart = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
 			JSpinner startSpinner = new JSpinner(smStart);
-			startSpinner.setBounds(130, 195, 100, 25);
+			startSpinner.setBounds(130, 250, 100, 25);
 			JSpinner.DateEditor deStart = new JSpinner.DateEditor(startSpinner, "HH:mm");
 			startSpinner.setEditor(deStart);
 			startSpinner.setValue(java.sql.Time.valueOf(m.getStartTime()));
@@ -319,12 +320,12 @@ public class CalendarView {
 
 			// End Time
 			JLabel endLabel = new JLabel("End Time:");
-			endLabel.setBounds(20, 230, 100, 25);
+			endLabel.setBounds(20, 285, 100, 25);
 			dialog.add(endLabel);
 
 			SpinnerDateModel smEnd = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
 			JSpinner endSpinner = new JSpinner(smEnd);
-			endSpinner.setBounds(130, 230, 100, 25);
+			endSpinner.setBounds(130, 285, 100, 25);
 			JSpinner.DateEditor deEnd = new JSpinner.DateEditor(endSpinner, "HH:mm");
 			endSpinner.setEditor(deEnd);
 			endSpinner.setValue(java.sql.Time.valueOf(m.getEndTime()));
@@ -353,12 +354,12 @@ public class CalendarView {
 		} else if (e instanceof ProjAssn p) {
 			// Due Time
 			JLabel dueLabel = new JLabel("Due Time:");
-			dueLabel.setBounds(20, 195, 100, 25);
+			dueLabel.setBounds(20, 250, 100, 25);
 			dialog.add(dueLabel);
 
 			SpinnerDateModel smDue = new SpinnerDateModel(now, null, null, java.util.Calendar.HOUR_OF_DAY);
 			JSpinner dueBySpinner = new JSpinner(smDue);
-			dueBySpinner.setBounds(130, 195, 100, 25);
+			dueBySpinner.setBounds(130, 250, 100, 25);
 			JSpinner.DateEditor deDue = new JSpinner.DateEditor(dueBySpinner, "HH:mm");
 			dueBySpinner.setEditor(deDue);
 			dueBySpinner.setValue(java.sql.Time.valueOf(p.getDue().toLocalTime()));
@@ -366,7 +367,7 @@ public class CalendarView {
 
 			// Estimate Duration
 			JLabel estimateLabel = new JLabel("Estimate:");
-			estimateLabel.setBounds(20, 230, 100, 25);
+			estimateLabel.setBounds(20, 285, 100, 25);
 			dialog.add(estimateLabel);
 
 			String[] generatedOptions = ProjAssnView.generateTimeOptions(0.25, 48.0, 0.25);
@@ -376,17 +377,17 @@ public class CalendarView {
 
 			JComboBox<String> estimateDropdown = new JComboBox<>(sArray);
 			estimateDropdown.setSelectedItem(sArray[0]);
-			estimateDropdown.setBounds(130, 230, 120, 25);
+			estimateDropdown.setBounds(130, 285, 120, 25);
 			dialog.add(estimateDropdown);
 
 			// Priority
 			JLabel priorityLabel = new JLabel("Priority:");
-			priorityLabel.setBounds(20, 265, 100, 25);
+			priorityLabel.setBounds(20, 320, 100, 25);
 			dialog.add(priorityLabel);
 
 			JComboBox<Priority> priorityDropdown = new JComboBox<>(Priority.values());
 			priorityDropdown.setSelectedItem(p.getPriority());
-			priorityDropdown.setBounds(130, 265, 120, 25);
+			priorityDropdown.setBounds(130, 320, 120, 25);
 			dialog.add(priorityDropdown);
 
 			saveBtn.addActionListener(a -> {
