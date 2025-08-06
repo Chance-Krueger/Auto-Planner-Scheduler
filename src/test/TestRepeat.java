@@ -111,6 +111,9 @@ public class TestRepeat {
 
 		Repeat c = Repeat.checkRepeatFromString("CUSTOM");
 		assertTrue(c.toString().equals(c.TOSTRING));
+
+		Repeat e2w2 = Repeat.checkRepeatFromString("Every 2 WEEks");
+		assertTrue(c.toString().equals(c.TOSTRING));
 	}
 
 }

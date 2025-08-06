@@ -755,4 +755,58 @@ public class DataBase {
 		}
 	}
 
+	// MAKE IT TO DELTE 
+	public static void deleteEventFromDataBase(String email, Event e) {
+		try (Connection con = makeConnection()) {
+			int userId = getUserID(email);
+			if (userId <= 0) {
+				System.err.println("Invalid user ID for email: " + email);
+				return;
+			}
+
+			String baseQuery = "SELECT cal_id, event_type FROM events WHERE user_id = ? AND title = ? AND location = ? AND `repeat` = ? AND notes = ? AND url = ?";
+			PreparedStatement psFind = con.prepareStatement(baseQuery);
+			psFind.setInt(1, userId);
+			psFind.setString(2, e.getTitle());
+			psFind.setString(3, e.getLocation());
+			psFind.setString(4, e.getRepeat().toString());
+			psFind.setString(5, e.getNotes());
+			psFind.setString(6, e.getUrl());
+
+			ResultSet rs = psFind.executeQuery();
+
+			while (rs.next()) {
+				int calId = rs.getInt("cal_id");
+				String type = rs.getString("event_type");
+
+				// Delete from type-specific table first
+				if ("MeetingAppt".equalsIgnoreCase(type)) {
+					PreparedStatement psDeleteMeet = con
+							.prepareStatement("DELETE FROM meeting_appt_events WHERE cal_id = ? AND user_id = ?");
+					psDeleteMeet.setInt(1, calId);
+					psDeleteMeet.setInt(2, userId);
+					psDeleteMeet.executeUpdate();
+				} else if ("ProjAssn".equalsIgnoreCase(type)) {
+					PreparedStatement psDeleteProj = con
+							.prepareStatement("DELETE FROM project_assn_events WHERE cal_id = ? AND user_id = ?");
+					psDeleteProj.setInt(1, calId);
+					psDeleteProj.setInt(2, userId);
+					psDeleteProj.executeUpdate();
+				}
+
+				// Now delete from events table
+				PreparedStatement psDeleteEvent = con
+						.prepareStatement("DELETE FROM events WHERE cal_id = ? AND user_id = ?");
+				psDeleteEvent.setInt(1, calId);
+				psDeleteEvent.setInt(2, userId);
+				psDeleteEvent.executeUpdate();
+			}
+
+			System.out.println("Matching event(s) deleted for user: " + email);
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
 }

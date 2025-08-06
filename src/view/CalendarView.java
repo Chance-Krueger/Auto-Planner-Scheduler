@@ -30,7 +30,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 
 import javax.swing.JButton;
@@ -111,7 +110,7 @@ public class CalendarView {
 	 */
 	public CalendarView() {
 		this.acct = new String[2];
-		this.acct[0] = "";
+		this.acct[0] = "chancekrueger@arizona.edu";
 		curTime = LocalDate.now();
 		this.acct[1] = curTime.toString();
 		this.calendar = DataBase.getUserCalendar("chancekrueger@arizona.edu"); // TESTING
@@ -301,8 +300,13 @@ public class CalendarView {
 
 		// Save Button adjusted vertically
 		JButton saveBtn = new JButton("Save");
-		saveBtn.setBounds(150, 360, 100, 30);
+		saveBtn.setBounds(300, 370, 100, 30);
 		dialog.add(saveBtn);
+
+		// Delete Button
+		JButton delBtn = new JButton("Delete");
+		delBtn.setBounds(20, 370, 100, 30);
+		dialog.add(delBtn);
 
 		if (e instanceof MeetingAppt m) {
 			// Start Time
@@ -331,6 +335,7 @@ public class CalendarView {
 			endSpinner.setValue(java.sql.Time.valueOf(m.getEndTime()));
 			dialog.add(endSpinner);
 
+			// ASK IF USER WANTS TO UPDATE EVENT OR ALL FUTURE EVENTS
 			saveBtn.addActionListener(a -> {
 				System.out.println("SAVE BUTTON PUSED");
 				try {
@@ -345,10 +350,36 @@ public class CalendarView {
 
 					DataBase.updateEventInUserCalendar(acct[0], e, updated);
 					dialog.dispose();
-					CalendarView.main(acct); // Optional refresh
+					this.frame.dispose();
+					CalendarView.main(acct);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+			});
+
+			// ADD POP UP DIALOG TO CONFIRM
+			// THIS DIALOG WILL HAVE LIKE APPLE -> IF ON REPEAT ASK USER TO DELETE EVENT OR
+			// EVENTS
+			delBtn.addActionListener(a -> {
+				System.out.println("DELETE BUTTON PUSHED");
+				try {
+					LocalTime start = LocalTime.parse(new SimpleDateFormat("HH:mm").format(startSpinner.getValue()));
+					LocalTime end = LocalTime.parse(new SimpleDateFormat("HH:mm").format(endSpinner.getValue()));
+
+					MeetingAppt updated = new MeetingAppt(titleField.getText(), m.getDate(), start, end);
+					updated.setLocation(locationField.getText());
+					updated.setUrl(urlField.getText());
+					updated.setNotes(notesArea.getText());
+					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
+
+					DataBase.deleteEventFromDataBase(acct[0], updated);
+					dialog.dispose();
+					this.frame.dispose();
+					CalendarView.main(acct);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+
 			});
 
 		} else if (e instanceof ProjAssn p) {
@@ -372,7 +403,7 @@ public class CalendarView {
 
 			String[] generatedOptions = ProjAssnView.generateTimeOptions(0.25, 48.0, 0.25);
 			String[] sArray = new String[generatedOptions.length + 1];
-			sArray[0] = String.format("%.1f hours", p.getTime().toMinutes() / 60.0);
+			sArray[0] = String.format("%.2f hours", (double) p.getTime().toMinutes() / 60);
 			System.arraycopy(generatedOptions, 0, sArray, 1, generatedOptions.length);
 
 			JComboBox<String> estimateDropdown = new JComboBox<>(sArray);
@@ -390,6 +421,7 @@ public class CalendarView {
 			priorityDropdown.setBounds(130, 320, 120, 25);
 			dialog.add(priorityDropdown);
 
+			// ASK IF USER WANTS TO UPDATE EVENT OR ALL FUTURE EVENTS
 			saveBtn.addActionListener(a -> {
 				System.out.println("SAVE BUTTON PUSED");
 				try {
@@ -407,6 +439,34 @@ public class CalendarView {
 
 					DataBase.updateEventInUserCalendar(acct[0], e, updated);
 					dialog.dispose();
+					this.frame.dispose();
+					CalendarView.main(acct);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			});
+
+			// ADD POP UP DIALOG TO CONFIRM
+			// THIS DIALOG WILL HAVE LIKE APPLE -> IF ON REPEAT ASK USER TO DELETE EVENT OR
+			// EVENTS
+			delBtn.addActionListener(a -> {
+				System.out.println("DELETE BUTTON PUSHED");
+				try {
+					LocalTime dueTime = LocalTime.parse(new SimpleDateFormat("HH:mm").format(dueBySpinner.getValue()));
+
+					Duration dur = Duration.ofMinutes((long) (Double.parseDouble(
+							estimateDropdown.getSelectedItem().toString().replace("hours", "").trim()) * 60));
+
+					ProjAssn updated = new ProjAssn(titleField.getText(), (Priority) priorityDropdown.getSelectedItem(),
+							dur, LocalDateTime.of(p.getDue().toLocalDate(), dueTime));
+					updated.setLocation(locationField.getText());
+					updated.setUrl(urlField.getText());
+					updated.setNotes(notesArea.getText());
+					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
+
+					DataBase.deleteEventFromDataBase(acct[0], updated);
+					dialog.dispose();
+					this.frame.dispose();
 					CalendarView.main(acct);
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -414,7 +474,6 @@ public class CalendarView {
 			});
 		}
 		dialog.setVisible(true);
-
 	}
 
 	private ListModel<String> createEventList(LocalDate selectedDate) {
@@ -435,7 +494,7 @@ public class CalendarView {
 		for (Event event : events) {
 			String label = formatEventSummary(event);
 			model.addElement(label);
-			displayedEvents.add(event); // ⚡ keep actual event
+			displayedEvents.add(event); // keep actual event
 		}
 
 		return model;
@@ -443,7 +502,6 @@ public class CalendarView {
 
 	private String formatEventSummary(Event event) {
 
-		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
 		String title = event.getTitle();
@@ -550,7 +608,6 @@ public class CalendarView {
 				onDateClicked(day);
 
 				LocalDate today = LocalDate.now();
-				LocalDate clickedDate = LocalDate.of(curTime.getYear(), curTime.getMonth(), day);
 
 				// Reset all labels
 				for (JLabel label : dayLabels) {

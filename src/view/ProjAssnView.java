@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import javax.swing.JTextField;
@@ -188,10 +189,16 @@ public class ProjAssnView {
 		frame.getContentPane().add(repeatDropDown);
 
 		notesText = new JTextArea();
+		notesText.setBorder(null);
 		notesText.setLineWrap(true);
+		notesText.setWrapStyleWord(true);
 		notesText.setFont(new Font("PT Sans", Font.PLAIN, 15));
 		notesText.setBounds(325, 456, 409, 56);
-		frame.getContentPane().add(notesText);
+
+		JScrollPane scrollPane = new JScrollPane(notesText);
+		scrollPane.setBorder(null);
+		scrollPane.setBounds(325, 456, 409, 56);
+		frame.getContentPane().add(scrollPane);
 
 		confirmButton = new JButton("Confirm");
 		confirmButton.setForeground(Color.BLACK);
@@ -232,7 +239,7 @@ public class ProjAssnView {
 	}
 
 	private void addEvent() {
-//
+
 		this.titleError.setVisible(false);
 
 		if (this.titleText.getText().isEmpty()) {

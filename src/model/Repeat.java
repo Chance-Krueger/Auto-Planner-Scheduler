@@ -58,8 +58,8 @@ public enum Repeat {
 	 * Returns the {@code Repeat} enum corresponding to the given string. Matching
 	 * is case-insensitive and based on enum constant names.
 	 *
-	 * @param s the string representation of a repeat type (e.g., "mon",
-	 *          "everyweek")
+	 * @param s the string representation of a repeat type (e.g., "mon", "every
+	 *          week")
 	 * @return the matching {@code Repeat} constant, or {@code null} if the input is
 	 *         invalid
 	 */
@@ -67,6 +67,18 @@ public enum Repeat {
 		try {
 			return Repeat.valueOf(s.toUpperCase());
 		} catch (Exception e) {
+			String[] split;
+			String newWord;
+			// Check for 2 word toString.
+			if ((split = s.split(" ")).length == 2) {
+				newWord = split[0] + split[1];
+				return checkRepeatFromString(newWord);
+				// Case for Every 2 Weeks.
+			} else if ((split = s.split(" ")).length == 3) {
+				newWord = split[0] + split[1] + split[2];
+				return checkRepeatFromString(newWord);
+			}
+			// Not an existing word.
 			return null;
 		}
 	}
