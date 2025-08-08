@@ -2,6 +2,7 @@ package model;
 
 import java.awt.Color;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,7 +11,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +48,7 @@ public class DataBase {
 
 	}
 
-	public static boolean addEventToUserCalendar(String email, Event e) {
+	public static boolean addEventToUserCalendar(String email, Event e, boolean isOriginal) {
 		String title = e.getTitle();
 		String location = e.getLocation();
 		String repeat = e.getRepeat().toString();
@@ -108,11 +111,118 @@ public class DataBase {
 				psProj.executeUpdate();
 			}
 
+			// Step 3: Handle repeat logic
+			if (isOriginal) {
+				expandRepeats(email, e);
+			}
 			return true;
-		} catch (Exception ex) {
+		} catch (
+
+		Exception ex) {
 			ex.printStackTrace();
 			return false;
 		}
+	}
+
+	private static void expandRepeats(String email, Event e) {
+		String repeat = e.getRepeat().toString();
+		if (repeat.equals("None"))
+			return;
+
+		LocalDate startDate;
+		List<LocalDate> repeatDates = new ArrayList<>();
+		int currentYear = LocalDate.now().getYear();
+
+		if (e instanceof MeetingAppt m) {
+			startDate = m.getDate();
+		} else if (e instanceof ProjAssn p) {
+			startDate = p.getDue().toLocalDate();
+		} else {
+			return;
+		}
+
+		int targetDay = startDate.getDayOfMonth(); // Used for monthly repeat
+
+		switch (repeat) {
+		case "Everyday": {
+			int maxRepeats = 365;
+			int count = 0;
+			for (LocalDate d = startDate.plusDays(1); d.getYear() == currentYear
+					&& count < maxRepeats; d = d.plusDays(1), count++) {
+				repeatDates.add(d);
+			}
+			break;
+		}
+		case "Every Week":
+			for (LocalDate d = startDate.plusWeeks(1); d.getYear() == currentYear; d = d.plusWeeks(1)) {
+				repeatDates.add(d);
+			}
+			break;
+		case "Every 2 Weeks":
+			for (LocalDate d = startDate.plusWeeks(2); d.getYear() == currentYear; d = d.plusWeeks(2)) {
+				repeatDates.add(d);
+			}
+			break;
+		case "Every Month":
+			for (LocalDate d = startDate.plusMonths(1); d.getYear() == currentYear; d = d.plusMonths(1)) {
+				int lastDay = d.lengthOfMonth();
+				int dayToUse = Math.min(targetDay, lastDay);
+				LocalDate adjustedDate = LocalDate.of(d.getYear(), d.getMonth(), dayToUse);
+				repeatDates.add(adjustedDate);
+			}
+			break;
+		case "Every Year":
+			for (LocalDate d = startDate.plusYears(1); d.getYear() == currentYear; d = d.plusYears(1)) {
+				repeatDates.add(d);
+			}
+			break;
+		}
+
+		for (LocalDate d : repeatDates) {
+			if (eventExists(email, e.getTitle(), d))
+				continue;
+
+			Event repeatEvent = null;
+
+			if (e instanceof MeetingAppt m) {
+				repeatEvent = new MeetingAppt(m.getTitle(), d, m.getStartTime(), m.getEndTime());
+			} else if (e instanceof ProjAssn p) {
+				repeatEvent = new ProjAssn(p.getTitle(), p.getPriority(), p.getTime(),
+						LocalDateTime.of(d, p.getDue().toLocalTime()));
+			}
+
+			if (repeatEvent != null) {
+				repeatEvent.setLocation(e.getLocation());
+				repeatEvent.setUrl(e.getUrl());
+				repeatEvent.setNotes(e.getNotes());
+				repeatEvent.setRepeat(e.getRepeat());
+				addEventToUserCalendar(email, repeatEvent, false); // Prevent recursive expansion
+			}
+		}
+	}
+
+	private static boolean eventExists(String email, String title, LocalDate date) {
+		String query = """
+				    SELECT COUNT(*) FROM events e
+				    JOIN meeting_appt_events m ON e.cal_id = m.cal_id
+				    JOIN user u ON e.user_id = u.user_id
+				    WHERE u.email = ? AND e.title = ? AND m.date = ?
+				""";
+
+		try (Connection conn = DataBase.makeConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, email);
+			stmt.setString(2, title);
+			stmt.setString(3, date.toString()); // if date is LocalDate
+
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(1) > 0;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return false;
 	}
 
 	public static int getUserID(String email) {
@@ -700,6 +810,15 @@ public class DataBase {
 			psProj.setInt(5, userId);
 			psProj.executeUpdate();
 
+			// Is a repeat
+			if (!updated.getRepeat().TOSTRING.toString().equals("None")) {
+				// FIX REPEAT LOGIC
+				// IF DAILY, WEEKLY, EVERY OTHER WEEK -> Make it end by End of Year of when
+				// event made
+				// IF MONTHY -> ONLY DO 10 YEARS
+				// IF YEALRY, ONLY DO IT FOR 100 YEARS
+			}
+
 			return true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -748,6 +867,15 @@ public class DataBase {
 			psMeeting.setInt(5, userId);
 			psMeeting.executeUpdate();
 
+			// Is a repeat
+			if (!updated.getRepeat().TOSTRING.toString().equals("None")) {
+				// FIX REPEAT LOGIC
+				// IF DAILY, WEEKLY, EVERY OTHER WEEK -> Make it end by End of Year of when
+				// event made
+				// IF MONTHY -> ONLY DO 10 YEARS
+				// IF YEALRY, ONLY DO IT FOR 100 YEARS
+			}
+
 			return true;
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -755,7 +883,7 @@ public class DataBase {
 		}
 	}
 
-	// MAKE IT TO DELTE 
+	// MAKE IT TO DELTE
 	public static void deleteEventFromDataBase(String email, Event e) {
 		try (Connection con = makeConnection()) {
 			int userId = getUserID(email);

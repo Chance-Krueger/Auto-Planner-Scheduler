@@ -280,7 +280,7 @@ public class ApptMeetView {
 		maEvent.setUrl(this.urlText.getText());
 
 		// ADD EVENT TO USERS HASHMAP AND PUT INTO THEIR DATA
-		if (DataBase.addEventToUserCalendar(email, maEvent)) {
+		if (DataBase.addEventToUserCalendar(email, maEvent, true)) {
 			this.frame.dispose();
 			CalendarView.main(this.acct);
 		} else {

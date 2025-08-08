@@ -268,7 +268,7 @@ public class ProjAssnView {
 		System.out.println(pa.toString());
 
 		// ADD EVENT TO USERS HASHMAP AND PUT INTO THEIR DATA
-		if (DataBase.addEventToUserCalendar(email, pa)) {
+		if (DataBase.addEventToUserCalendar(email, pa, true)) {
 			this.frame.dispose();
 			CalendarView.main(this.acct);
 		} else {
