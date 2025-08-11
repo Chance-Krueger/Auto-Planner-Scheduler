@@ -14,7 +14,6 @@ import model.DataBase;
 import javax.swing.JTextField;
 import java.awt.Font;
 
-
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
 import java.awt.Cursor;
@@ -113,15 +112,18 @@ public class LoginView {
 		errorMessage.setVisible(false);
 
 		txtPassword = new JPasswordField();
-		txtPassword.setBounds(312, 325, 335, 42);
+		txtPassword.setBorder(null);
+		txtPassword.setBounds(312, 325, 328, 42);
+		txtPassword.setBackground(new Color(245, 246, 247));
 		frame.getContentPane().add(txtPassword);
 		frame.getContentPane().add(txtPassword);
 
 		labelEmailAddress = new JTextField();
+		labelEmailAddress.setBorder(null);
 		labelEmailAddress.setForeground(Color.DARK_GRAY);
 		labelEmailAddress.setFont(new Font("PT Sans", Font.PLAIN, 13));
-		labelEmailAddress.setBackground(new Color(255, 255, 255));
-		labelEmailAddress.setBounds(312, 263, 335, 42);
+		labelEmailAddress.setBackground(new Color(245, 246, 247));
+		labelEmailAddress.setBounds(312, 263, 328, 42);
 		frame.getContentPane().add(labelEmailAddress);
 		labelEmailAddress.setColumns(10);
 

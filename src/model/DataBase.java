@@ -201,7 +201,7 @@ public class DataBase {
 		}
 	}
 
-	private static boolean eventExists(String email, String title, LocalDate date) {
+	public static boolean eventExists(String email, String title, LocalDate date) {
 		String query = """
 				    SELECT COUNT(*) FROM events e
 				    JOIN meeting_appt_events m ON e.cal_id = m.cal_id
@@ -212,7 +212,7 @@ public class DataBase {
 		try (Connection conn = DataBase.makeConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 			stmt.setString(1, email);
 			stmt.setString(2, title);
-			stmt.setString(3, date.toString()); // if date is LocalDate
+			stmt.setString(3, date.toString());
 
 			ResultSet rs = stmt.executeQuery();
 			if (rs.next()) {
@@ -826,54 +826,57 @@ public class DataBase {
 		}
 	}
 
-	public static boolean updateEventInUserCalendar(String email, Event e, MeetingAppt updated) {
+	public static boolean updateEventInUserCalendar(String email, Event original, MeetingAppt updated,
+			boolean applyToAllFuture) {
 		try (Connection con = makeConnection()) {
 			int userId = getUserID(email);
 			if (userId <= 0)
 				return false;
 
-			// Step 1: Find event ID from events table
-			String query = "SELECT cal_id FROM events WHERE user_id = ? AND title = ? AND event_type = ?";
-			PreparedStatement psFind = con.prepareStatement(query);
-			psFind.setInt(1, userId);
-			psFind.setString(2, e.getTitle());
-			psFind.setString(3, "MeetingAppt");
+			boolean repeatChanged = !original.getRepeat().equals(updated.getRepeat());
 
-			ResultSet rs = psFind.executeQuery();
-			if (!rs.next())
-				return false;
+			if (applyToAllFuture || repeatChanged) {
+				// Step 1: Delete current and future events
+				deleteEventsFromDataBase(email, original, true);
 
-			int eventId = rs.getInt("cal_id");
+				// Step 2: Save the updated event
+				addEventToUserCalendar(email, updated, false); // false = don't expand yet
 
-			// Step 2: Update common fields
-			String updateEvent = "UPDATE events SET title = ?, location = ?, `repeat` = ?, notes = ?, url = ? WHERE cal_id = ? AND user_id = ?";
-			PreparedStatement psEvent = con.prepareStatement(updateEvent);
-			psEvent.setString(1, updated.getTitle());
-			psEvent.setString(2, updated.getLocation());
-			psEvent.setString(3, updated.getRepeat().toString());
-			psEvent.setString(4, updated.getNotes());
-			psEvent.setString(5, updated.getUrl());
-			psEvent.setInt(6, eventId);
-			psEvent.setInt(7, userId);
-			psEvent.executeUpdate();
+				// Step 3: Expand new repeat logic
+				expandRepeats(email, updated);
+			} else {
+				// Update only the current instance
+				String query = "SELECT cal_id FROM events WHERE user_id = ? AND title = ? AND event_type = ?";
+				PreparedStatement psFind = con.prepareStatement(query);
+				psFind.setInt(1, userId);
+				psFind.setString(2, original.getTitle());
+				psFind.setString(3, "MeetingAppt");
 
-			// Step 3: Update meeting_appt_events table
-			String updateMeeting = "UPDATE meeting_appt_events SET date = ?, start_time = ?, end_time = ? WHERE cal_id = ? AND user_id = ?";
-			PreparedStatement psMeeting = con.prepareStatement(updateMeeting);
-			psMeeting.setString(1, updated.getDate().toString());
-			psMeeting.setString(2, updated.getStartTime().toString());
-			psMeeting.setString(3, updated.getEndTime().toString());
-			psMeeting.setInt(4, eventId);
-			psMeeting.setInt(5, userId);
-			psMeeting.executeUpdate();
+				ResultSet rs = psFind.executeQuery();
+				if (!rs.next())
+					return false;
 
-			// Is a repeat
-			if (!updated.getRepeat().TOSTRING.toString().equals("None")) {
-				// FIX REPEAT LOGIC
-				// IF DAILY, WEEKLY, EVERY OTHER WEEK -> Make it end by End of Year of when
-				// event made
-				// IF MONTHY -> ONLY DO 10 YEARS
-				// IF YEALRY, ONLY DO IT FOR 100 YEARS
+				int eventId = rs.getInt("cal_id");
+
+				String updateEvent = "UPDATE events SET title = ?, location = ?, `repeat` = ?, notes = ?, url = ? WHERE cal_id = ? AND user_id = ?";
+				PreparedStatement psEvent = con.prepareStatement(updateEvent);
+				psEvent.setString(1, updated.getTitle());
+				psEvent.setString(2, updated.getLocation());
+				psEvent.setString(3, updated.getRepeat().toString());
+				psEvent.setString(4, updated.getNotes());
+				psEvent.setString(5, updated.getUrl());
+				psEvent.setInt(6, eventId);
+				psEvent.setInt(7, userId);
+				psEvent.executeUpdate();
+
+				String updateMeeting = "UPDATE meeting_appt_events SET date = ?, start_time = ?, end_time = ? WHERE cal_id = ? AND user_id = ?";
+				PreparedStatement psMeeting = con.prepareStatement(updateMeeting);
+				psMeeting.setString(1, updated.getDate().toString());
+				psMeeting.setString(2, updated.getStartTime().toString());
+				psMeeting.setString(3, updated.getEndTime().toString());
+				psMeeting.setInt(4, eventId);
+				psMeeting.setInt(5, userId);
+				psMeeting.executeUpdate();
 			}
 
 			return true;
@@ -884,7 +887,7 @@ public class DataBase {
 	}
 
 	// MAKE IT TO DELTE
-	public static void deleteEventFromDataBase(String email, Event e) {
+	public static void deleteEventsFromDataBase(String email, Event e, boolean deleteAllFuture) {
 		try (Connection con = makeConnection()) {
 			int userId = getUserID(email);
 			if (userId <= 0) {
@@ -907,30 +910,54 @@ public class DataBase {
 				int calId = rs.getInt("cal_id");
 				String type = rs.getString("event_type");
 
-				// Delete from type-specific table first
+				boolean shouldDelete = false;
+
 				if ("MeetingAppt".equalsIgnoreCase(type)) {
-					PreparedStatement psDeleteMeet = con
-							.prepareStatement("DELETE FROM meeting_appt_events WHERE cal_id = ? AND user_id = ?");
-					psDeleteMeet.setInt(1, calId);
-					psDeleteMeet.setInt(2, userId);
-					psDeleteMeet.executeUpdate();
+					PreparedStatement psDate = con
+							.prepareStatement("SELECT date FROM meeting_appt_events WHERE cal_id = ?");
+					psDate.setInt(1, calId);
+					ResultSet rsDate = psDate.executeQuery();
+					if (rsDate.next()) {
+						LocalDate eventDate = LocalDate.parse(rsDate.getString("date"));
+						LocalDate targetDate = ((MeetingAppt) e).getDate();
+						shouldDelete = deleteAllFuture ? !eventDate.isBefore(targetDate) : eventDate.equals(targetDate);
+					}
 				} else if ("ProjAssn".equalsIgnoreCase(type)) {
-					PreparedStatement psDeleteProj = con
-							.prepareStatement("DELETE FROM project_assn_events WHERE cal_id = ? AND user_id = ?");
-					psDeleteProj.setInt(1, calId);
-					psDeleteProj.setInt(2, userId);
-					psDeleteProj.executeUpdate();
+					PreparedStatement psDate = con
+							.prepareStatement("SELECT due FROM project_assn_events WHERE cal_id = ?");
+					psDate.setInt(1, calId);
+					ResultSet rsDate = psDate.executeQuery();
+					if (rsDate.next()) {
+						LocalDate eventDate = LocalDateTime.parse(rsDate.getString("due")).toLocalDate();
+						LocalDate targetDate = ((ProjAssn) e).getDue().toLocalDate();
+						shouldDelete = deleteAllFuture ? !eventDate.isBefore(targetDate) : eventDate.equals(targetDate);
+					}
 				}
 
-				// Now delete from events table
-				PreparedStatement psDeleteEvent = con
-						.prepareStatement("DELETE FROM events WHERE cal_id = ? AND user_id = ?");
-				psDeleteEvent.setInt(1, calId);
-				psDeleteEvent.setInt(2, userId);
-				psDeleteEvent.executeUpdate();
+				if (shouldDelete) {
+					if ("MeetingAppt".equalsIgnoreCase(type)) {
+						PreparedStatement psDeleteMeet = con
+								.prepareStatement("DELETE FROM meeting_appt_events WHERE cal_id = ? AND user_id = ?");
+						psDeleteMeet.setInt(1, calId);
+						psDeleteMeet.setInt(2, userId);
+						psDeleteMeet.executeUpdate();
+					} else if ("ProjAssn".equalsIgnoreCase(type)) {
+						PreparedStatement psDeleteProj = con
+								.prepareStatement("DELETE FROM project_assn_events WHERE cal_id = ? AND user_id = ?");
+						psDeleteProj.setInt(1, calId);
+						psDeleteProj.setInt(2, userId);
+						psDeleteProj.executeUpdate();
+					}
+
+					PreparedStatement psDeleteEvent = con
+							.prepareStatement("DELETE FROM events WHERE cal_id = ? AND user_id = ?");
+					psDeleteEvent.setInt(1, calId);
+					psDeleteEvent.setInt(2, userId);
+					psDeleteEvent.executeUpdate();
+				}
 			}
 
-			System.out.println("Matching event(s) deleted for user: " + email);
+			System.out.println("Event deletion completed for user: " + email);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();

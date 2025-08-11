@@ -38,6 +38,7 @@ import javax.swing.JDialog;
 
 import java.awt.Cursor;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -337,7 +338,6 @@ public class CalendarView {
 
 			// ASK IF USER WANTS TO UPDATE EVENT OR ALL FUTURE EVENTS
 			saveBtn.addActionListener(a -> {
-				System.out.println("SAVE BUTTON PUSED");
 				try {
 					LocalTime start = LocalTime.parse(new SimpleDateFormat("HH:mm").format(startSpinner.getValue()));
 					LocalTime end = LocalTime.parse(new SimpleDateFormat("HH:mm").format(endSpinner.getValue()));
@@ -348,7 +348,20 @@ public class CalendarView {
 					updated.setNotes(notesArea.getText());
 					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
 
-					DataBase.updateEventInUserCalendar(acct[0], e, updated);
+					boolean isRepeating = m.getRepeat() != Repeat.NONE;
+
+					if (isRepeating) {
+						int choice = JOptionPane.showOptionDialog(dialog,
+								"This is a repeating event. Do you want to apply changes to just this one or all future events?",
+								"Edit Repeating Event", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+								new String[] { "Only This Event", "All Future Events" }, "Only This Event");
+
+						boolean applyToAllFuture = (choice == 1); // YES = 0, NO = 1
+						DataBase.updateEventInUserCalendar(acct[0], m, updated, applyToAllFuture);
+					} else {
+						DataBase.updateEventInUserCalendar(acct[0], m, updated, false);
+					}
+
 					dialog.dispose();
 					this.frame.dispose();
 					CalendarView.main(acct);
@@ -372,14 +385,26 @@ public class CalendarView {
 					updated.setNotes(notesArea.getText());
 					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
 
-					DataBase.deleteEventFromDataBase(acct[0], updated);
+					boolean isRepeating = updated.getRepeat() != Repeat.NONE;
+
+					if (isRepeating) {
+						int choice = JOptionPane.showOptionDialog(dialog,
+								"This is a repeating event. Do you want to delete just this one or all future events?",
+								"Delete Repeating Event", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+								new String[] { "Only This Event", "All Future Events" }, "Only This Event");
+
+						boolean deleteAllFuture = (choice == 1); // YES = 0, NO = 1
+						DataBase.deleteEventsFromDataBase(acct[0], updated, deleteAllFuture);
+					} else {
+						DataBase.deleteEventsFromDataBase(acct[0], updated, false);
+					}
+
 					dialog.dispose();
 					this.frame.dispose();
 					CalendarView.main(acct);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
-
 			});
 
 		} else if (e instanceof ProjAssn p) {
@@ -453,7 +478,6 @@ public class CalendarView {
 				System.out.println("DELETE BUTTON PUSHED");
 				try {
 					LocalTime dueTime = LocalTime.parse(new SimpleDateFormat("HH:mm").format(dueBySpinner.getValue()));
-
 					Duration dur = Duration.ofMinutes((long) (Double.parseDouble(
 							estimateDropdown.getSelectedItem().toString().replace("hours", "").trim()) * 60));
 
@@ -464,7 +488,20 @@ public class CalendarView {
 					updated.setNotes(notesArea.getText());
 					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
 
-					DataBase.deleteEventFromDataBase(acct[0], updated);
+					boolean isRepeating = updated.getRepeat() != Repeat.NONE;
+
+					if (isRepeating) {
+						int choice = JOptionPane.showOptionDialog(dialog,
+								"This is a repeating event. Do you want to delete just this one or all future events?",
+								"Delete Repeating Event", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+								new String[] { "Only This Event", "All Future Events" }, "Only This Event");
+
+						boolean deleteAllFuture = (choice == 1); // YES = 0, NO = 1
+						DataBase.deleteEventsFromDataBase(acct[0], updated, deleteAllFuture);
+					} else {
+						DataBase.deleteEventsFromDataBase(acct[0], updated, false);
+					}
+
 					dialog.dispose();
 					this.frame.dispose();
 					CalendarView.main(acct);
@@ -472,6 +509,7 @@ public class CalendarView {
 					ex.printStackTrace();
 				}
 			});
+
 		}
 		dialog.setVisible(true);
 	}
