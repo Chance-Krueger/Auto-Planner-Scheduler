@@ -964,4 +964,52 @@ public class DataBase {
 		}
 	}
 
+	public static List<ProjAssn> getAllProjAssn(String userEmail) {
+		List<ProjAssn> projList = new ArrayList<>();
+
+		try (Connection con = makeConnection()) {
+			LocalDateTime now = LocalDateTime.now();
+
+			String query = """
+					    SELECT e.title, e.location, e.repeat, e.notes, e.url,
+					           p.priority, p.time, p.due
+					    FROM project_assn_events p
+					    JOIN events e ON p.cal_id = e.cal_id
+					    JOIN user u ON e.user_id = u.user_id
+					    WHERE u.email = ? AND p.due >= ?
+					""";
+
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.setString(1, userEmail);
+			ps.setString(2, now.toString());
+
+			ResultSet rs = ps.executeQuery();
+
+			while (rs.next()) {
+				String title = rs.getString("title");
+				String location = rs.getString("location");
+				String repeat = rs.getString("repeat");
+				String notes = rs.getString("notes");
+				String url = rs.getString("url");
+
+				Priority priority = Priority.fromToString(rs.getString("priority"));
+				Duration time = Duration.parse(rs.getString("time"));
+				LocalDateTime due = LocalDateTime.parse(rs.getString("due"));
+
+				ProjAssn pa = new ProjAssn(title, priority, time, due);
+				pa.setLocation(location);
+				pa.setUrl(url);
+				pa.setNotes(notes);
+				pa.setRepeat(Repeat.checkRepeatFromString(repeat));
+
+				projList.add(pa);
+			}
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return projList;
+	}
+
 }

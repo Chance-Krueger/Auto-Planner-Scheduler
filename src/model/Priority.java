@@ -68,4 +68,8 @@ public enum Priority {
 		}
 		return null;
 	}
+
+	public int getValue() {
+		return this.prio;
+	}
 }
