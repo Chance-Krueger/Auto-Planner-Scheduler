@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.EventQueue;
+import java.awt.Image;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,6 +25,7 @@ public class MainMenuView {
 	private JButton settingsButton;
 
 	private String[] acct;
+	private JLabel mainMenuBackground;
 
 	/**
 	 * Launch the application.
@@ -87,38 +89,50 @@ public class MainMenuView {
 		this.backButton = new JButton("");
 		backButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		backButton.setBorder(null);
-		backButton.setBounds(303, 67, 352, 36);
+		backButton.setBounds(365, 40, 275, 36);
 		frame.getContentPane().add(backButton);
 
 		this.calendarButton = new JButton("");
 		calendarButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		calendarButton.setBorder(null);
-		calendarButton.setBounds(315, 253, 352, 29);
+		calendarButton.setBounds(365, 175, 258, 29);
 		frame.getContentPane().add(calendarButton);
 
 		this.bodButton = new JButton("");
 		bodButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		bodButton.setBorder(null);
-		bodButton.setBounds(315, 311, 352, 29);
+		bodButton.setBounds(365, 223, 258, 36);
 		frame.getContentPane().add(bodButton);
 
 		this.statsButton = new JButton("");
 		statsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		statsButton.setBorder(null);
-		statsButton.setBounds(315, 367, 352, 29);
+		statsButton.setBounds(365, 275, 258, 29);
 		frame.getContentPane().add(statsButton);
 
 		this.settingsButton = new JButton("");
 		settingsButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		settingsButton.setBorder(null);
-		settingsButton.setBounds(315, 420, 352, 29);
+		settingsButton.setBounds(365, 319, 258, 36);
 		frame.getContentPane().add(settingsButton);
 
-		JLabel lblNewLabel = new JLabel("");
-		lblNewLabel.setBounds(170, 0, 640, 548);
-		lblNewLabel.setIcon(new ImageIcon(
-				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/MainMenuBackgroundImage.png"));
-		frame.getContentPane().add(lblNewLabel);
+		// Load the original image
+		ImageIcon originalIcon = new ImageIcon(
+				"/Users/chancekrueger/Documents/GitHub/Auto-Planner-Scheduler/Photos/MainMenuImage.png");
+
+		// Resize image
+		Image scaledImage = originalIcon.getImage().getScaledInstance(400, 600, Image.SCALE_SMOOTH);
+
+		ImageIcon resizedIcon = new ImageIcon(scaledImage);
+
+		// Create the JLabel and set its bounds
+		mainMenuBackground = new JLabel();
+		mainMenuBackground.setBounds(170, 0, 640, 548);
+		mainMenuBackground.setIcon(resizedIcon);
+		mainMenuBackground.setHorizontalAlignment(SwingConstants.CENTER);
+		mainMenuBackground.setVerticalAlignment(SwingConstants.CENTER);
+		frame.getContentPane().add(mainMenuBackground);
+		frame.getContentPane().add(mainMenuBackground);
 
 		// ACTION LISTENERS
 		this.calendarButton.addActionListener(e -> calendar());

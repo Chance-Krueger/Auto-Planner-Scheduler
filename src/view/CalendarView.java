@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.IntStream;
 
 import javax.swing.JLabel;
 import javax.swing.DefaultListModel;
@@ -30,6 +32,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 
 import javax.swing.JButton;
@@ -242,7 +245,7 @@ public class CalendarView {
 	private void openEditPopup(Event e) {
 		JDialog dialog = new JDialog(frame, "Edit Event", true);
 		dialog.getContentPane().setLayout(null);
-		dialog.setSize(420, 460); // Increased height
+		dialog.setSize(420, 480); // Increased height
 		dialog.setLocationRelativeTo(null);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.setModalityType(JDialog.ModalityType.APPLICATION_MODAL);
@@ -299,14 +302,43 @@ public class CalendarView {
 
 		java.util.Date now = new java.util.Date();
 
+		// Change date
+
+		int yAxis = 0;
+
+		if (e instanceof MeetingAppt m) {
+			yAxis = 320;
+		} else {
+			yAxis = 360;
+		}
+
+		JLabel dateLabel = new JLabel("Date:");
+		dateLabel.setBounds(20, yAxis, 100, 25);
+
+		// Month
+		String[] months = new DateFormatSymbols().getMonths();
+		JComboBox<String> monthBox = new JComboBox<>(Arrays.copyOf(months, 12));
+		monthBox.setBounds(130, yAxis, 100, 25);
+
+		// Day
+		Integer[] days = IntStream.rangeClosed(1, 31).boxed().toArray(Integer[]::new);
+		JComboBox<Integer> dayBox = new JComboBox<>(days);
+		dayBox.setBounds(240, yAxis, 70, 25);
+
+		// Year
+		int currentYear = LocalDate.now().getYear();
+		Integer[] years = IntStream.rangeClosed(currentYear, currentYear + 5).boxed().toArray(Integer[]::new);
+		JComboBox<Integer> yearBox = new JComboBox<>(years);
+		yearBox.setBounds(310, yAxis, 100, 25);
+
 		// Save Button adjusted vertically
 		JButton saveBtn = new JButton("Save");
-		saveBtn.setBounds(300, 370, 100, 30);
+		saveBtn.setBounds(300, 390, 100, 30);
 		dialog.getContentPane().add(saveBtn);
 
 		// Delete Button
 		JButton delBtn = new JButton("Delete");
-		delBtn.setBounds(20, 370, 100, 30);
+		delBtn.setBounds(20, 390, 100, 30);
 		dialog.getContentPane().add(delBtn);
 
 		if (e instanceof MeetingAppt m) {
@@ -336,6 +368,11 @@ public class CalendarView {
 			endSpinner.setValue(java.sql.Time.valueOf(m.getEndTime()));
 			dialog.getContentPane().add(endSpinner);
 
+			LocalDate eventDate = m.getDate();
+			monthBox.setSelectedIndex(eventDate.getMonthValue() - 1);
+			dayBox.setSelectedItem(eventDate.getDayOfMonth());
+			yearBox.setSelectedItem(eventDate.getYear());
+
 			// ASK IF USER WANTS TO UPDATE EVENT OR ALL FUTURE EVENTS
 			saveBtn.addActionListener(a -> {
 				try {
@@ -347,6 +384,13 @@ public class CalendarView {
 					updated.setUrl(urlField.getText());
 					updated.setNotes(notesArea.getText());
 					updated.setRepeat(Repeat.checkRepeatFromString((String) repeatDropdown.getSelectedItem()));
+
+					int day = (Integer) dayBox.getSelectedItem();
+					int month = monthBox.getSelectedIndex() + 1; // 0-based
+					int year = (Integer) yearBox.getSelectedItem();
+					LocalDate selectedDate = LocalDate.of(year, month, day);
+
+					updated.setDate(selectedDate);
 
 					boolean isRepeating = m.getRepeat() != Repeat.NONE;
 
@@ -446,17 +490,27 @@ public class CalendarView {
 			priorityDropdown.setBounds(130, 320, 120, 25);
 			dialog.getContentPane().add(priorityDropdown);
 
+			LocalDate eventDate = p.getDue().toLocalDate();
+			monthBox.setSelectedIndex(eventDate.getMonthValue() - 1);
+			dayBox.setSelectedItem(eventDate.getDayOfMonth());
+			yearBox.setSelectedItem(eventDate.getYear());
+
 			// ASK IF USER WANTS TO UPDATE EVENT OR ALL FUTURE EVENTS
 			saveBtn.addActionListener(a -> {
 				System.out.println("SAVE BUTTON PUSED");
 				try {
 					LocalTime dueTime = LocalTime.parse(new SimpleDateFormat("HH:mm").format(dueBySpinner.getValue()));
 
+					int day = (Integer) dayBox.getSelectedItem();
+					int month = monthBox.getSelectedIndex() + 1; // 0-based
+					int year = (Integer) yearBox.getSelectedItem();
+					LocalDate selectedDate = LocalDate.of(year, month, day);
+
 					Duration dur = Duration.ofMinutes((long) (Double.parseDouble(
 							estimateDropdown.getSelectedItem().toString().replace("hours", "").trim()) * 60));
 
 					ProjAssn updated = new ProjAssn(titleField.getText(), (Priority) priorityDropdown.getSelectedItem(),
-							dur, LocalDateTime.of(p.getDue().toLocalDate(), dueTime));
+							dur, LocalDateTime.of(selectedDate, dueTime));
 					updated.setLocation(locationField.getText());
 					updated.setUrl(urlField.getText());
 					updated.setNotes(notesArea.getText());
@@ -511,6 +565,13 @@ public class CalendarView {
 			});
 
 		}
+
+		// Dates
+		dialog.getContentPane().add(dateLabel);
+		dialog.getContentPane().add(monthBox);
+		dialog.getContentPane().add(dayBox);
+		dialog.getContentPane().add(yearBox);
+
 		dialog.setVisible(true);
 	}
 
