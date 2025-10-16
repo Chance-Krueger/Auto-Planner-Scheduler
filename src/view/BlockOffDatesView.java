@@ -73,7 +73,7 @@ public class BlockOffDatesView {
 		this.email = "";
 		this.bod = new BlockOffDates();
 
-		// TESTING
+//		// TESTING
 		HashSet<LocalTime> s = new HashSet<LocalTime>();
 		LocalTime l = LocalTime.of(0, 15);
 		s.add(l);
@@ -88,6 +88,26 @@ public class BlockOffDatesView {
 		this.email = email;
 		this.bod = DataBase.getSettings(email).getBod();
 		initialize();
+	}
+
+	// TEMP IF NEEDED TO CHECK ALL
+	private void checkAll() {
+		String[] timeSlots = generateTimeSlots();
+		BlockOffDates fullBlock = new BlockOffDates();
+
+		for (int row = 0; row < table.getRowCount(); row++) {
+			Repeat day = Repeat.dayOfWeek(row);
+			Set<LocalTime> blockedTimes = new HashSet<>();
+
+			for (int col = 1; col < table.getColumnCount(); col++) {
+				table.setValueAt(true, row, col);
+				blockedTimes.add(LocalTime.parse(timeSlots[col - 1]));
+			}
+
+			fullBlock.changeBlockedTimeOfDay(day, blockedTimes);
+		}
+
+		this.bod = fullBlock;
 	}
 
 	/**

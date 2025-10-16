@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,8 +30,14 @@ public class Scheduler {
 		}
 
 	}
+	
+	TreeMap<LocalDate, List<Task>> scheduler;
+	
+	public Scheduler(String email) {
+		this.scheduler = Scheduler.scheduleTasks(email);
+	}
 
-	public static TreeMap<LocalDate, List<Task>> scheduleTasks(String email) {
+	private static TreeMap<LocalDate, List<Task>> scheduleTasks(String email) {
 
 		TreeMap<LocalDate, List<Task>> tm = new TreeMap<>();
 
@@ -48,60 +55,67 @@ public class Scheduler {
 
 		return tm;
 	}
-
-}
-
-class Task {
-
-	private static final int MAX_EXPECTED_DURATION = 2880; // 48 hours
-	private static final int MAX_PRIORITY_LEVEL = 10;
-
-	private double score;
-	private ProjAssn proj;
-
-	public Task(ProjAssn proj) {
-		this.proj = proj;
-		this.score = Task.calculateScore(proj);
+	
+	// MAKE IT RETURN COLLECTIONS.UNMODIFIABLE()
+	public TreeMap<LocalDate, List<Task>> getSchedule() {
+		return (this.scheduler);
 	}
+	
+	public static class Task {
 
-	public double getScore() {
-		return this.score;
-	}
+		private static final int MAX_EXPECTED_DURATION = 2880; // 48 hours
+		private static final int MAX_PRIORITY_LEVEL = 10;
 
-	public ProjAssn getProjAssn() {
-		return proj;
-	}
+		private double score;
+		private ProjAssn proj;
 
-	public int getEstimatedMinutes() {
-		return proj.getTime().toMinutesPart();
-	}
-
-	public int getPriorityLevel() {
-		return proj.getPriority().getValue();
-	}
-
-	private static double calculateScore(ProjAssn proj) {
-		LocalDateTime now = LocalDateTime.now();
-		LocalDateTime due = proj.getDue();
-
-		long daysUntilDue = ChronoUnit.DAYS.between(now.toLocalDate(), due.toLocalDate());
-
-		double urgencyScore;
-		if (daysUntilDue > 0) {
-			urgencyScore = 1.0 / (daysUntilDue + 1);
-		} else {
-			// Due today: use hours/minutes for finer urgency
-			long minutesUntilDue = Duration.between(now, due).toMinutes();
-			urgencyScore = minutesUntilDue > 0 ? 1.0 / (minutesUntilDue + 1) : 2.0; // boost overdue tasks
+		public Task(ProjAssn proj) {
+			this.proj = proj;
+			this.score = Task.calculateScore(proj);
 		}
 
-		double durationScore = Math.min(1.0, (double) proj.getTime().toMinutes() / MAX_EXPECTED_DURATION);
-		double priorityScore = (double) proj.getPriority().getValue() / MAX_PRIORITY_LEVEL;
+		public double getScore() {
+			return this.score;
+		}
 
-		double urgencyWeight = 0.5;
-		double durationWeight = 0.3;
-		double priorityWeight = 0.2;
+		public ProjAssn getProjAssn() {
+			return proj;
+		}
 
-		return (urgencyWeight * urgencyScore) + (durationWeight * durationScore) + (priorityWeight * priorityScore);
+		public int getEstimatedMinutes() {
+			// Hours * 60 + remaining minutes
+			return (proj.getTime().toHoursPart() * 60) + proj.getTime().toMinutesPart();
+		}
+
+		public int getPriorityLevel() {
+			return proj.getPriority().getValue();
+		}
+
+		private static double calculateScore(ProjAssn proj) {
+			LocalDateTime now = LocalDateTime.now();
+			LocalDateTime due = proj.getDue();
+
+			long daysUntilDue = ChronoUnit.DAYS.between(now.toLocalDate(), due.toLocalDate());
+
+			double urgencyScore;
+			if (daysUntilDue > 0) {
+				urgencyScore = 1.0 / (daysUntilDue + 1);
+			} else {
+				// Due today: use hours/minutes for finer urgency
+				long minutesUntilDue = Duration.between(now, due).toMinutes();
+				urgencyScore = minutesUntilDue > 0 ? 1.0 / (minutesUntilDue + 1) : 2.0; // boost overdue tasks
+			}
+
+			double durationScore = Math.min(1.0, (double) proj.getTime().toMinutes() / MAX_EXPECTED_DURATION);
+			double priorityScore = (double) proj.getPriority().getValue() / MAX_PRIORITY_LEVEL;
+
+			double urgencyWeight = 0.5;
+			double durationWeight = 0.3;
+			double priorityWeight = 0.2;
+
+			return (urgencyWeight * urgencyScore) + (durationWeight * durationScore) + (priorityWeight * priorityScore);
+		}
 	}
+
+
 }

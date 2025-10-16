@@ -26,6 +26,7 @@ public class MainMenuView {
 
 	private String[] acct;
 	private JLabel mainMenuBackground;
+	private JButton schedulerButton;
 
 	/**
 	 * Launch the application.
@@ -70,7 +71,7 @@ public class MainMenuView {
 	 */
 	public MainMenuView() {
 		this.acct = new String[1];
-		this.acct[0] = "";
+		this.acct[0] = "chancekrueger@arizona.edu";
 		initialize();
 	}
 
@@ -124,6 +125,12 @@ public class MainMenuView {
 		Image scaledImage = originalIcon.getImage().getScaledInstance(400, 600, Image.SCALE_SMOOTH);
 
 		ImageIcon resizedIcon = new ImageIcon(scaledImage);
+		
+		schedulerButton = new JButton("");
+		schedulerButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		schedulerButton.setBorder(null);
+		schedulerButton.setBounds(365, 367, 258, 36);
+		frame.getContentPane().add(schedulerButton);
 
 		// Create the JLabel and set its bounds
 		mainMenuBackground = new JLabel();
@@ -140,6 +147,13 @@ public class MainMenuView {
 		this.statsButton.addActionListener(e -> stats());
 		this.settingsButton.addActionListener(e -> settings());
 		this.backButton.addActionListener(e -> backArrow());
+		this.schedulerButton.addActionListener(e -> scheduler());
+	}
+
+	private void scheduler() {
+		this.frame.dispose();
+		SchedulerView.main(this.acct);
+
 	}
 
 	private void backArrow() {
@@ -170,5 +184,4 @@ public class MainMenuView {
 		CalendarView.main(this.acct);
 
 	}
-
 }

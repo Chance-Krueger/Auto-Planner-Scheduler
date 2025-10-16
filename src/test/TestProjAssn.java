@@ -110,7 +110,7 @@ public class TestProjAssn {
 
 	@Test
 	void testToString() {
-		LocalDateTime t = LocalDateTime.now();
+		LocalDateTime t = LocalDateTime.of(2025, 05, 25, 07, 15);
 		Priority p = Priority.FIVE;
 		Duration d = Duration.ofHours(50);
 		ProjAssn pa = new ProjAssn("This Test Class", p, d, t);
