@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -14,7 +13,6 @@ import java.util.TreeMap;
 public class Scheduler {
 
 	public static void main(String[] args) {
-
 		TreeMap<LocalDate, List<Task>> tm = Scheduler.scheduleTasks("chancekrueger@arizona.edu");
 
 		for (Entry<LocalDate, List<Task>> entry : tm.entrySet()) {
@@ -24,50 +22,69 @@ public class Scheduler {
 			System.out.println("Date: " + date);
 			for (Task task : tasks) {
 				ProjAssn proj = task.getProjAssn();
-				System.out.printf("   Task: %s | Score: %.2f | Duration: %d min | Priority: %d%n", proj.getTitle(),
-						task.getScore(), task.getEstimatedMinutes(), task.getPriorityLevel());
+				System.out.printf("   Task: %s | Score: %.2f | Duration: %d min | Priority: %d | Allocated: %d min%n",
+						proj.getTitle(), task.getScore(), task.getEstimatedMinutes(), task.getPriorityLevel(),
+						task.getAllocatedMinutes());
 			}
 		}
-
 	}
-	
-	TreeMap<LocalDate, List<Task>> scheduler;
-	
+
+	private TreeMap<LocalDate, List<Task>> scheduler;
+
 	public Scheduler(String email) {
 		this.scheduler = Scheduler.scheduleTasks(email);
 	}
 
 	private static TreeMap<LocalDate, List<Task>> scheduleTasks(String email) {
-
 		TreeMap<LocalDate, List<Task>> tm = new TreeMap<>();
 
 		List<ProjAssn> allProjAssn = DataBase.getAllProjAssn(email);
 
 		for (ProjAssn proj : allProjAssn) {
-			LocalDate date = LocalDate.of(proj.getDue().getYear(), proj.getDue().getMonth(),
-					proj.getDue().getDayOfMonth());
-			tm.computeIfAbsent(date, d -> new ArrayList<>()).add(new Task(proj));
+			LocalDate today = LocalDate.now();
+			LocalDate dueDate = proj.getDue().toLocalDate();
+			long daysUntilDue = ChronoUnit.DAYS.between(today, dueDate);
+
+			// total minutes required for this project
+			long totalMinutes = proj.getTime().toMinutes();
+
+			// number of days to allocate (include today and due date)
+			int daysToAllocate = (int) Math.max(1, daysUntilDue + 1);
+
+			// evenly split minutes across days
+			int perDay = (int) (totalMinutes / daysToAllocate);
+			int remainder = (int) (totalMinutes % daysToAllocate);
+
+			for (int i = 0; i < daysToAllocate; i++) {
+				LocalDate day = today.plusDays(i);
+				Task partialTask = new Task(proj);
+
+				// distribute remainder fairly
+				int alloc = perDay + (i < remainder ? 1 : 0);
+
+				partialTask.setAllocatedMinutes(alloc);
+				tm.computeIfAbsent(day, d -> new ArrayList<>()).add(partialTask);
+			}
 		}
 
+		// Sort tasks within each day by score (highest first)
 		Comparator<Task> comparator = Comparator.comparingDouble(Task::getScore).reversed();
-
 		tm.values().forEach(taskList -> taskList.sort(comparator));
 
 		return tm;
 	}
-	
-	// MAKE IT RETURN COLLECTIONS.UNMODIFIABLE()
-	public TreeMap<LocalDate, List<Task>> getSchedule() {
-		return (this.scheduler);
-	}
-	
-	public static class Task {
 
+	public TreeMap<LocalDate, List<Task>> getSchedule() {
+		return this.scheduler;
+	}
+
+	public static class Task {
 		private static final int MAX_EXPECTED_DURATION = 2880; // 48 hours
 		private static final int MAX_PRIORITY_LEVEL = 10;
 
 		private double score;
 		private ProjAssn proj;
+		private int allocatedMinutes; // new field
 
 		public Task(ProjAssn proj) {
 			this.proj = proj;
@@ -83,12 +100,19 @@ public class Scheduler {
 		}
 
 		public int getEstimatedMinutes() {
-			// Hours * 60 + remaining minutes
 			return (proj.getTime().toHoursPart() * 60) + proj.getTime().toMinutesPart();
 		}
 
 		public int getPriorityLevel() {
 			return proj.getPriority().getValue();
+		}
+
+		public int getAllocatedMinutes() {
+			return allocatedMinutes;
+		}
+
+		public void setAllocatedMinutes(int minutes) {
+			this.allocatedMinutes = minutes;
 		}
 
 		private static double calculateScore(ProjAssn proj) {
@@ -101,9 +125,8 @@ public class Scheduler {
 			if (daysUntilDue > 0) {
 				urgencyScore = 1.0 / (daysUntilDue + 1);
 			} else {
-				// Due today: use hours/minutes for finer urgency
 				long minutesUntilDue = Duration.between(now, due).toMinutes();
-				urgencyScore = minutesUntilDue > 0 ? 1.0 / (minutesUntilDue + 1) : 2.0; // boost overdue tasks
+				urgencyScore = minutesUntilDue > 0 ? 1.0 / (minutesUntilDue + 1) : 2.0;
 			}
 
 			double durationScore = Math.min(1.0, (double) proj.getTime().toMinutes() / MAX_EXPECTED_DURATION);
@@ -116,6 +139,4 @@ public class Scheduler {
 			return (urgencyWeight * urgencyScore) + (durationWeight * durationScore) + (priorityWeight * priorityScore);
 		}
 	}
-
-
 }

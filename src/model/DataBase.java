@@ -1,6 +1,7 @@
 package model;
 
 import java.awt.Color;
+import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -968,45 +969,57 @@ public class DataBase {
 		List<ProjAssn> projList = new ArrayList<>();
 
 		try (Connection con = makeConnection()) {
-			LocalDateTime now = LocalDateTime.now();
+			// Step 1: Get user_id
+			PreparedStatement psId = con.prepareStatement("SELECT user_id FROM user WHERE email = ?");
+			psId.setString(1, userEmail);
+			ResultSet rsId = psId.executeQuery();
+			if (!rsId.next()) {
+				return projList;
+			}
+			int userId = rsId.getInt("user_id");
 
-			String query = """
-					    SELECT e.title, e.location, e.repeat, e.notes, e.url,
-					           p.priority, p.time, p.due
-					    FROM project_assn_events p
-					    JOIN events e ON p.cal_id = e.cal_id
-					    JOIN user u ON e.user_id = u.user_id
-					    WHERE u.email = ? AND p.due >= ?
-					""";
+			// Step 2: Get all events of type ProjAssn for this user
+			String eventQuery = "SELECT * FROM events WHERE user_id = ? AND event_type = 'ProjAssn'";
+			PreparedStatement psEvents = con.prepareStatement(eventQuery);
+			psEvents.setInt(1, userId);
+			ResultSet rsEvents = psEvents.executeQuery();
 
-			PreparedStatement ps = con.prepareStatement(query);
-			ps.setString(1, userEmail);
-			ps.setString(2, now.toString());
+			while (rsEvents.next()) {
+				int calId = rsEvents.getInt("cal_id");
+				String title = rsEvents.getString("title");
+				String url = rsEvents.getString("url");
+				String notes = rsEvents.getString("notes");
+				String location = rsEvents.getString("location");
+				String repeat = rsEvents.getString("repeat");
 
-			ResultSet rs = ps.executeQuery();
+				// Step 3: Get project assignment details
+				PreparedStatement psProj = con.prepareStatement("SELECT * FROM project_assn_events WHERE cal_id = ?");
+				psProj.setInt(1, calId);
+				ResultSet rsProj = psProj.executeQuery();
 
-			while (rs.next()) {
-				String title = rs.getString("title");
-				String location = rs.getString("location");
-				String repeat = rs.getString("repeat");
-				String notes = rs.getString("notes");
-				String url = rs.getString("url");
+				if (rsProj.next()) {
+					Priority priority = Priority.fromToString(rsProj.getString("priority"));
 
-				Priority priority = Priority.fromToString(rs.getString("priority"));
-				Duration time = Duration.parse(rs.getString("time"));
-				LocalDateTime due = LocalDateTime.parse(rs.getString("due"));
+					// If stored as ISO-8601 duration string like "PT30M"
+					Duration time = Duration.parse(rsProj.getString("time"));
+					// If stored as numeric minutes, use Duration.ofMinutes(rsProj.getInt("time"))
 
-				ProjAssn pa = new ProjAssn(title, priority, time, due);
-				pa.setLocation(location);
-				pa.setUrl(url);
-				pa.setNotes(notes);
-				pa.setRepeat(Repeat.checkRepeatFromString(repeat));
+					// If stored as ISO-8601 string, parse directly
+					LocalDateTime due = LocalDateTime.parse(rsProj.getString("due"));
+					// If stored as DATETIME, use rsProj.getTimestamp("due").toLocalDateTime()
 
-				projList.add(pa);
+					ProjAssn pa = new ProjAssn(title, priority, time, due);
+					pa.setLocation(location);
+					pa.setUrl(url);
+					pa.setNotes(notes);
+					pa.setRepeat(Repeat.checkRepeatFromString(repeat));
+
+					projList.add(pa);
+				}
 			}
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		return projList;

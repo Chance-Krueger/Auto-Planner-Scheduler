@@ -4,23 +4,40 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 import model.Scheduler;
+
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Window;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.awt.Color;
 import java.awt.Component;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class SchedulerView {
 
@@ -40,6 +57,8 @@ public class SchedulerView {
 	private String[] acct;
 	private TreeMap<LocalDate, List<model.Scheduler.Task>> scheduler;
 	private LocalDate currentWeekStart;
+	private List<String> completedTaskIds = new ArrayList<>();
+	private static final String COMPLETED_FILE = "completed_tasks.dat";
 
 	/**
 	 * Launch the application.
@@ -171,31 +190,6 @@ public class SchedulerView {
 		sundayLabel.setBounds(690, 122, 21, 16);
 		frame.getContentPane().add(sundayLabel);
 
-		// RENDER DATES
-		List<LocalDate> weekDates = getCurrentWeekDates(LocalDate.now());
-		curDateLabel.setText(weekDates.get(0).getMonth().toString() + "/" + weekDates.get(0).getDayOfMonth() + "/"
-				+ weekDates.get(0).getYear());
-
-		JLabel[] dayLabels = { mondayLabel, tuesdayLabel, wednesdayLabel, thursdayLabel, fridayLabel, saturdayLabel,
-				sundayLabel };
-
-		for (int i = 0; i < 7; i++) {
-			LocalDate date = weekDates.get(i);
-			dayLabels[i].setText(date.getDayOfMonth() + "");
-
-			List<Scheduler.Task> tasks = scheduler.getOrDefault(date, new ArrayList<>());
-
-			int yOffset = 150;
-			for (Scheduler.Task task : tasks) {
-				JLabel taskLabel = new JLabel(
-						task.getProjAssn().getTitle() + " – " + task.getEstimatedMinutes() + " min");
-				taskLabel.setFont(new Font("PT Sans Narrow", Font.PLAIN, 12));
-				taskLabel.setBounds(267 + (i * 62), yOffset, 100, 20); // Adjust x/y for spacing
-				frame.getContentPane().add(taskLabel);
-				yOffset += 25; // Stack vertically
-			}
-		}
-
 		scheulerBackgroundImage = new JLabel("");
 		scheulerBackgroundImage.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		scheulerBackgroundImage.setIcon(new ImageIcon(
@@ -207,6 +201,78 @@ public class SchedulerView {
 		this.backWeekButton.addActionListener(e -> backWeek());
 		this.fowardWeekButton.addActionListener(e -> fowardWeek());
 
+		loadCompletedTasks();
+		renderWeek(currentWeekStart);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private void loadCompletedTasks() {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(COMPLETED_FILE))) {
+			completedTaskIds = (List<String>) ois.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			completedTaskIds = new ArrayList<>(); // fallback if file doesn't exist
+		}
+	}
+
+	private void saveCompletedTasks() {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(COMPLETED_FILE))) {
+			oos.writeObject(completedTaskIds);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void openTaskPopup(Scheduler.Task task) {
+		JFrame popup = new JFrame("Task Details");
+		popup.setSize(300, 250);
+		popup.setLocationRelativeTo(frame);
+		popup.setLayout(null);
+
+		String taskId = task.getProjAssn().getTitle() + "|" + task.getProjAssn().getDue().toLocalDate();
+
+		JLabel titleLabel = new JLabel("Title: " + task.getProjAssn().getTitle());
+		titleLabel.setBounds(20, 20, 250, 20);
+		popup.add(titleLabel);
+
+		JLabel priorityLabel = new JLabel("Priority: " + task.getProjAssn().getPriority());
+		priorityLabel.setBounds(20, 50, 250, 20);
+		popup.add(priorityLabel);
+
+		JLabel timeLabel = new JLabel("Estimated Time: " + task.getEstimatedMinutes() + " min");
+		timeLabel.setBounds(20, 80, 250, 20);
+		popup.add(timeLabel);
+
+		JLabel allocLabel = new JLabel("Allocated Time: " + task.getAllocatedMinutes() + " min");
+		allocLabel.setBounds(20, 110, 250, 20);
+		popup.add(allocLabel);
+
+		JLabel dueLabel = new JLabel("Due: " + task.getProjAssn().getDue().toString());
+		dueLabel.setBounds(20, 140, 250, 20);
+		popup.add(dueLabel);
+
+		JCheckBox doneCheckBox = new JCheckBox("Mark as completed");
+		doneCheckBox.setBounds(20, 170, 200, 20);
+		doneCheckBox.setOpaque(false);
+		doneCheckBox.addActionListener(e -> {
+			completedTaskIds.add(taskId);
+			saveCompletedTasks();
+			popup.dispose();
+
+			// Refresh the current frame
+			renderWeek(currentWeekStart);
+			frame.revalidate();
+			frame.repaint();
+		});
+
+		popup.add(doneCheckBox);
+
+		JButton closeButton = new JButton("Close");
+		closeButton.setBounds(100, 200, 80, 30);
+		closeButton.addActionListener(e -> popup.dispose());
+		popup.add(closeButton);
+
+		popup.setVisible(true);
 	}
 
 	private void backWeek() {
@@ -232,11 +298,11 @@ public class SchedulerView {
 		JLabel[] dayLabels = { mondayLabel, tuesdayLabel, wednesdayLabel, thursdayLabel, fridayLabel, saturdayLabel,
 				sundayLabel };
 
-		// Clear old task labels (optional: store them in a list and remove from frame)
+		int[] dayX = { 210, 280, 350, 420, 490, 560, 630 }; // Adjust as needed
+
+		// Remove old scroll panes and panels
 		for (Component comp : frame.getContentPane().getComponents()) {
-			if (comp instanceof JLabel && comp != curDateLabel && comp != scheulerBackgroundImage && comp != mondayLabel
-					&& comp != tuesdayLabel && comp != wednesdayLabel && comp != thursdayLabel && comp != fridayLabel
-					&& comp != saturdayLabel && comp != sundayLabel) {
+			if (comp instanceof JScrollPane || comp instanceof JPanel) {
 				frame.getContentPane().remove(comp);
 			}
 		}
@@ -247,15 +313,40 @@ public class SchedulerView {
 
 			List<Scheduler.Task> tasks = scheduler.getOrDefault(date, new ArrayList<>());
 
-			int yOffset = 150;
+			// Create vertical task panel
+			JPanel taskPanel = new JPanel();
+			taskPanel.setLayout(new BoxLayout(taskPanel, BoxLayout.Y_AXIS));
+			taskPanel.setOpaque(false);
+
 			for (Scheduler.Task task : tasks) {
-				JLabel taskLabel = new JLabel(
-						task.getProjAssn().getTitle() + " – " + task.getEstimatedMinutes() + " min");
-				taskLabel.setFont(new Font("PT Sans Narrow", Font.PLAIN, 12));
-				taskLabel.setBounds(267 + (i * 62), yOffset, 100, 20);
-				frame.getContentPane().add(taskLabel);
-				yOffset += 25;
+
+				String taskId = task.getProjAssn().getTitle() + "|" + task.getProjAssn().getDue().toLocalDate();
+				if (completedTaskIds.contains(taskId))
+					continue;
+
+				JButton taskButton = new JButton(
+						task.getProjAssn().getTitle() + " – " + task.getAllocatedMinutes() + " min");
+				taskButton.setFont(new Font("PT Sans Narrow", Font.PLAIN, 12));
+				taskButton.setMaximumSize(new Dimension(100, 20));
+				taskButton.setFocusPainted(false);
+				taskButton.setBorderPainted(false);
+				taskButton.setContentAreaFilled(false);
+				taskButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				taskButton.addActionListener(e -> openTaskPopup(task));
+				taskPanel.add(taskButton);
 			}
+
+			// Wrap in scroll pane
+			JScrollPane scrollPane = new JScrollPane(taskPanel);
+			scrollPane.setBounds(dayX[i], 150, 100, 300); // Adjust height as needed
+			scrollPane.setBorder(null);
+			scrollPane.setOpaque(false);
+			scrollPane.getViewport().setOpaque(false);
+			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+			frame.getContentPane().add(scrollPane);
+			frame.getContentPane().setComponentZOrder(scrollPane, 0); // bring to front
 		}
 
 		frame.repaint();
